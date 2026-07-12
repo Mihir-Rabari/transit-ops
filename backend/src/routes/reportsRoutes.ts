@@ -13,9 +13,9 @@ const router = Router();
 // Apply authentication to all routes
 router.use(authenticateJWT);
 
-router.get('/fuel-efficiency', requireRole([Role.FLEET_MANAGER, Role.SAFETY_OFFICER, Role.FINANCIAL_ANALYST]), getFuelEfficiencyReport);
-router.get('/utilization', requireRole([Role.FLEET_MANAGER, Role.SAFETY_OFFICER, Role.FINANCIAL_ANALYST]), getUtilizationReport);
-router.get('/roi', requireRole([Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST]), getROIReport);
-router.get('/export.csv', requireRole([Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST]), exportCSVReport);
+router.get('/fuel-efficiency', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.SAFETY_OFFICER, Role.FINANCIAL_ANALYST]), getFuelEfficiencyReport);
+router.get('/utilization', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.SAFETY_OFFICER, Role.FINANCIAL_ANALYST]), getUtilizationReport);
+router.get('/roi', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST]), getROIReport);
+router.get('/export.csv', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST]), exportCSVReport);
 
 export default router;
