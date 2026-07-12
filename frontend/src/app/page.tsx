@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Truck } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -12,8 +13,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}
-                 className="h-8 w-8 rounded flex items-center justify-center font-bold text-sm font-display">
-              TO
+                 className="h-8 w-8 rounded-lg flex items-center justify-center font-bold text-sm font-display">
+              <Truck size={16} />
             </div>
             <span className="font-display font-semibold text-base tracking-tight"
                   style={{ color: 'var(--color-text-primary)' }}>
@@ -197,8 +198,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}
-                 className="h-6 w-6 rounded flex items-center justify-center font-bold text-xs font-display">
-              TO
+                 className="h-6 w-6 rounded-lg flex items-center justify-center font-bold text-xs font-display">
+              <Truck size={12} />
             </div>
             <span className="font-display font-semibold text-sm" style={{ color: 'var(--color-text-muted)' }}>
               TransitOps

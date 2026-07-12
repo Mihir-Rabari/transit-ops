@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Building, Mail, KeyRound, User as UserIcon } from 'lucide-react';
+import { Building, Mail, KeyRound, User as UserIcon, Truck } from 'lucide-react';
 
 export default function LoginPage() {
   const { user, login, register, loading } = useAuth();
@@ -95,8 +95,8 @@ export default function LoginPage() {
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-10">
         <div style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}
-             className="h-8 w-8 rounded flex items-center justify-center font-bold text-sm font-display">
-          TO
+             className="h-8 w-8 rounded-lg flex items-center justify-center font-bold text-sm font-display">
+          <Truck size={16} />
         </div>
         <span className="font-display font-semibold text-base"
               style={{ color: 'var(--color-text-primary)' }}>

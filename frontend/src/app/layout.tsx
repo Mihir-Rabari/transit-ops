@@ -90,9 +90,9 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between px-5 h-14"
                style={{ borderBottom: '1px solid var(--color-border)' }}>
             <div className="flex items-center gap-2.5">
-              <div className="h-7 w-7 rounded flex items-center justify-center font-bold text-xs font-display"
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center font-bold text-xs font-display"
                    style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}>
-                TO
+                <Truck size={16} />
               </div>
               <span className="font-display font-semibold text-sm tracking-tight"
                     style={{ color: 'var(--color-text-primary)' }}>
