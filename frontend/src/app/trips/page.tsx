@@ -317,15 +317,15 @@ export default function TripsPage() {
     <div className="space-y-6">
       
       {/* Header Panel */}
-      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">Trip Management</h2>
-          <p className="text-sm text-slate-400 dark:text-dark-muted">Drag and drop cards to change trip statuses natively.</p>
+          <h2 className="text-scale-lg font-display font-semibold" style={{ color: 'var(--color-text-primary)' }}>Trip Management</h2>
+          <p className="text-scale-sm" style={{ color: 'var(--color-text-muted)' }}>Drag and drop cards to change trip statuses natively.</p>
         </div>
         {isFleetManager && (
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center space-x-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 shadow-md transition-all self-start sm:self-auto"
+            className="btn-primary self-start sm:self-auto"
           >
             <Plus size={16} />
             <span>Create Draft Trip</span>
@@ -335,52 +335,55 @@ export default function TripsPage() {
 
       {/* Create Trip Form Panel */}
       {showAddForm && isFleetManager && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-md animate-fadeIn">
-          <div className="mb-4 flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
-            <h3 className="font-bold text-slate-800 dark:text-white">Create Draft Trip</h3>
-            <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="ops-panel p-5 animate-fadeIn">
+          <div className="mb-4 flex items-center justify-between pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <h3 className="font-display font-semibold text-scale-md" style={{ color: 'var(--color-text-primary)' }}>Create Draft Trip</h3>
+            <button onClick={() => setShowAddForm(false)} style={{ color: 'var(--color-text-muted)' }}>
               <X size={18} />
             </button>
           </div>
 
           {formError && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-500 border border-red-200/50">
+            <div className="mb-4 rounded p-3 text-xs font-semibold" style={{ background: 'rgba(255, 92, 92, 0.1)', color: 'var(--color-signal-red)', border: '1px solid rgba(255, 92, 92, 0.2)' }}>
               {formError}
             </div>
           )}
 
           <form onSubmit={handleCreateTrip} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Source / Origin *</label>
+              <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Source / Origin *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Chicago Depot"
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Destination *</label>
+              <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Destination *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Detroit Fulfillment Center"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Select Available Vehicle *</label>
+              <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Select Available Vehicle *</label>
               <select
                 required
                 value={vehicleId}
                 onChange={(e) => setVehicleId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
                 <option value="">-- Choose Vehicle --</option>
                 {availVehicles.map(v => (
@@ -392,12 +395,13 @@ export default function TripsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Select Available Driver *</label>
+              <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Select Available Driver *</label>
               <select
                 required
                 value={driverId}
                 onChange={(e) => setDriverId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
                 <option value="">-- Choose Driver --</option>
                 {availDrivers.map(d => (
@@ -409,7 +413,7 @@ export default function TripsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cargo Weight (kg) *</label>
+              <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Cargo Weight (kg) *</label>
               <input
                 type="number"
                 required
@@ -417,12 +421,13 @@ export default function TripsPage() {
                 placeholder="e.g. 5400"
                 value={cargoWeight}
                 onChange={(e) => setCargoWeight(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Planned Distance (km) *</label>
+              <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Planned Distance (km) *</label>
               <input
                 type="number"
                 required
@@ -430,15 +435,13 @@ export default function TripsPage() {
                 placeholder="e.g. 460"
                 value={plannedDistance}
                 onChange={(e) => setPlannedDistance(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div className="flex items-end sm:col-span-2 md:col-span-3">
-              <button
-                type="submit"
-                className="w-full sm:w-auto rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
-              >
+              <button type="submit" className="btn-primary">
                 Create Draft Trip
               </button>
             </div>
@@ -449,26 +452,28 @@ export default function TripsPage() {
       {/* Trips Kanban Board */}
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-500 border-r-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
         </div>
       ) : trips.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card shadow-sm">
-          <Route className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
-          <h3 className="text-md font-bold text-slate-700 dark:text-slate-300">No trips logged in the system yet</h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-dark-muted">Register a vehicle and a driver first to create a trip.</p>
+        <div className="ops-panel p-8 text-center" style={{ borderStyle: 'dashed' }}>
+          <Route className="mx-auto h-10 w-10 mb-3" style={{ color: 'var(--color-border)' }} />
+          <h3 className="text-scale-lg font-display font-semibold" style={{ color: 'var(--color-text-primary)' }}>No trips logged yet</h3>
+          <p className="mt-1 text-scale-sm" style={{ color: 'var(--color-text-muted)' }}>Register a vehicle and a driver first to create a trip.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           
           {/* Column 1: Drafts */}
-          <div 
+          <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleCardDrop(e, 'DRAFT')}
-            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+            className="ops-panel p-3 space-y-4 min-h-[500px] col-header--draft"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Draft ({draftTrips.length})</span>
-              <span className="h-2 w-2 rounded-full bg-slate-400" />
+            <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk'" }}>
+                Draft <span className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>({draftTrips.length})</span>
+              </span>
+              <span className="status-badge status-badge--slate">Draft</span>
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {draftTrips.map((t) => (
@@ -476,51 +481,53 @@ export default function TripsPage() {
                   key={t.id} 
                   draggable={isDriverOrManager}
                   onDragStart={(e) => handleDragStart(e, t)}
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all cursor-grab active:cursor-grabbing"
+                  className="ops-panel p-4 space-y-3 cursor-grab active:cursor-grabbing"
                 >
-                  <div className="flex justify-between items-start text-xs font-semibold text-slate-400">
-                    <span className="font-mono text-2xs truncate max-w-[100px]">ID: {t.id.substring(0, 8)}</span>
-                    <span className="text-slate-500">Draft</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="telemetry text-[10px] truncate max-w-[100px]" style={{ color: 'var(--color-text-muted)' }}>ID: {t.id.substring(0, 8)}</span>
+                    <span className="status-badge status-badge--slate">Draft</span>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 dark:text-dark-muted uppercase font-bold tracking-wider">Route</p>
-                    <div className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-slate-200 font-semibold mt-1">
-                      <MapPin size={12} className="text-brand-500 shrink-0" />
+                    <p className="telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Route</p>
+                    <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      <MapPin size={12} style={{ color: 'var(--color-signal-amber)', flexShrink: 0 }} />
                       <span className="truncate">{t.source}</span>
-                      <span className="text-slate-300 font-light">&rarr;</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>&rarr;</span>
                       <span className="truncate">{t.destination}</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-2xs bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg">
+                  <div className="grid grid-cols-2 gap-2 text-[10px] p-2 rounded" style={{ background: 'var(--color-surface-raised)' }}>
                     <div>
-                      <p className="text-slate-400">Vehicle</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.vehicle.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Vehicle</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.vehicle.name}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Driver</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.driver.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Driver</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.driver.name}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Cargo</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.cargoWeightKg.toLocaleString()} kg</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Cargo</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.cargoWeightKg.toLocaleString()} kg</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Dist</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.plannedDistanceKm} km</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Dist</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.plannedDistanceKm} km</p>
                     </div>
                   </div>
                   {isDriverOrManager && (
                     <div className="flex space-x-2 pt-1">
                       <button
                         onClick={() => handleDispatch(t.id)}
-                        className="flex flex-1 items-center justify-center space-x-1 rounded bg-brand-600 py-1.5 text-2xs font-semibold text-white hover:bg-brand-700"
+                        className="flex flex-1 items-center justify-center gap-1 rounded py-1.5 text-[10px] font-semibold text-[#0D1117] hover:opacity-90"
+                        style={{ background: 'var(--color-signal-amber)' }}
                       >
                         <Play size={10} />
                         <span>Dispatch</span>
                       </button>
                       <button
                         onClick={() => handleCancel(t.id)}
-                        className="flex flex-1 items-center justify-center space-x-1 rounded border border-slate-200 hover:bg-red-50 hover:text-red-500 dark:border-dark-border dark:hover:bg-red-950/20 text-2xs font-semibold"
+                        className="flex flex-1 items-center justify-center gap-1 rounded border py-1.5 text-[10px] font-semibold hover:opacity-90"
+                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-signal-red)' }}
                       >
                         <XCircle size={10} />
                         <span>Cancel</span>
@@ -533,14 +540,16 @@ export default function TripsPage() {
           </div>
 
           {/* Column 2: Dispatched */}
-          <div 
+          <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleCardDrop(e, 'DISPATCHED')}
-            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+            className="ops-panel p-3 space-y-4 min-h-[500px] col-header--dispatch"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Dispatched ({dispatchedTrips.length})</span>
-              <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk'" }}>
+                Dispatched <span className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>({dispatchedTrips.length})</span>
+              </span>
+              <span className="status-badge status-badge--amber">On Trip</span>
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {dispatchedTrips.map((t) => (
@@ -548,37 +557,37 @@ export default function TripsPage() {
                   key={t.id} 
                   draggable={isDriverOrManager}
                   onDragStart={(e) => handleDragStart(e, t)}
-                  className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all cursor-grab active:cursor-grabbing"
+                  className="ops-panel p-4 space-y-3 cursor-grab active:cursor-grabbing"
                 >
-                  <div className="flex justify-between items-start text-xs font-semibold text-blue-500">
-                    <span className="font-mono text-2xs truncate max-w-[100px] text-slate-400">ID: {t.id.substring(0, 8)}</span>
-                    <span>On Route</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="telemetry text-[10px] truncate max-w-[100px]" style={{ color: 'var(--color-text-muted)' }}>ID: {t.id.substring(0, 8)}</span>
+                    <span className="status-badge status-badge--amber">On Route</span>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 dark:text-dark-muted uppercase font-bold tracking-wider">Route</p>
-                    <div className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-slate-200 font-semibold mt-1">
-                      <MapPin size={12} className="text-brand-500 shrink-0" />
+                    <p className="telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Route</p>
+                    <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      <MapPin size={12} style={{ color: 'var(--color-signal-amber)', flexShrink: 0 }} />
                       <span className="truncate">{t.source}</span>
-                      <span className="text-slate-300 font-light">&rarr;</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>&rarr;</span>
                       <span className="truncate">{t.destination}</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-2xs bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg">
+                  <div className="grid grid-cols-2 gap-2 text-[10px] p-2 rounded" style={{ background: 'var(--color-surface-raised)' }}>
                     <div>
-                      <p className="text-slate-400">Vehicle</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.vehicle.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Vehicle</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.vehicle.name}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Driver</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.driver.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Driver</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.driver.name}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Cargo</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.cargoWeightKg.toLocaleString()} kg</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Cargo</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.cargoWeightKg.toLocaleString()} kg</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Dist</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.plannedDistanceKm} km</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Dist</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.plannedDistanceKm} km</p>
                     </div>
                   </div>
                   <div className="flex space-x-2 pt-1">
@@ -586,14 +595,16 @@ export default function TripsPage() {
                       <>
                         <button
                           onClick={() => setSelectedTripForComplete(t)}
-                          className="flex flex-1 items-center justify-center space-x-1 rounded bg-emerald-600 py-1.5 text-2xs font-semibold text-white hover:bg-emerald-700 animate-pulse"
+                          className="flex flex-1 items-center justify-center gap-1 rounded py-1.5 text-[10px] font-semibold text-[#0D1117] hover:opacity-90"
+                          style={{ background: 'var(--color-signal-green)' }}
                         >
                           <CheckCircle2 size={10} />
                           <span>Complete</span>
                         </button>
                         <button
                           onClick={() => handleCancel(t.id)}
-                          className="flex flex-1 items-center justify-center space-x-1 rounded border border-slate-200 hover:bg-red-50 hover:text-red-500 dark:border-dark-border dark:hover:bg-red-950/20 text-2xs font-semibold"
+                          className="flex flex-1 items-center justify-center gap-1 rounded border py-1.5 text-[10px] font-semibold hover:opacity-90"
+                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-signal-red)' }}
                         >
                           <XCircle size={10} />
                           <span>Cancel</span>
@@ -602,7 +613,8 @@ export default function TripsPage() {
                     )}
                     <button
                       onClick={() => openDocsModal(t)}
-                      className="flex items-center justify-center rounded border border-slate-200 px-2 py-1 text-2xs font-semibold text-slate-400 hover:text-brand-500 dark:border-dark-border"
+                      className="flex items-center justify-center rounded border px-2 py-1 text-2xs font-semibold"
+                      style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
                       title="Trip Documents"
                     >
                       <FileText size={12} />
@@ -614,14 +626,16 @@ export default function TripsPage() {
           </div>
 
           {/* Column 3: Completed */}
-          <div 
+          <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleCardDrop(e, 'COMPLETED')}
-            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+            className="ops-panel p-3 space-y-4 min-h-[500px] col-header--complete"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Completed ({completedTrips.length})</span>
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk'" }}>
+                Completed <span className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>({completedTrips.length})</span>
+              </span>
+              <span className="status-badge status-badge--green">Delivered</span>
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {completedTrips.map((t) => (
@@ -629,43 +643,44 @@ export default function TripsPage() {
                   key={t.id} 
                   draggable={isDriverOrManager}
                   onDragStart={(e) => handleDragStart(e, t)}
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all opacity-85 cursor-grab active:cursor-grabbing"
+                  className="ops-panel p-4 space-y-3 opacity-85 cursor-grab active:cursor-grabbing"
                 >
-                  <div className="flex justify-between items-start text-xs font-semibold text-emerald-500">
-                    <span className="font-mono text-2xs truncate max-w-[100px] text-slate-400">ID: {t.id.substring(0, 8)}</span>
-                    <span>Delivered</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="telemetry text-[10px] truncate max-w-[100px]" style={{ color: 'var(--color-text-muted)' }}>ID: {t.id.substring(0, 8)}</span>
+                    <span className="status-badge status-badge--green">Delivered</span>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 dark:text-dark-muted uppercase font-bold tracking-wider">Route</p>
-                    <div className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-slate-200 font-semibold mt-1">
-                      <MapPin size={12} className="text-brand-500 shrink-0" />
+                    <p className="telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Route</p>
+                    <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      <MapPin size={12} style={{ color: 'var(--color-signal-amber)', flexShrink: 0 }} />
                       <span className="truncate">{t.source}</span>
-                      <span className="text-slate-300 font-light">&rarr;</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>&rarr;</span>
                       <span className="truncate">{t.destination}</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-2xs bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg">
+                  <div className="grid grid-cols-2 gap-2 text-[10px] p-2 rounded" style={{ background: 'var(--color-surface-raised)' }}>
                     <div>
-                      <p className="text-slate-400">Actual Dist</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.actualDistanceKm} km</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Actual Dist</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.actualDistanceKm} km</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Fuel Cons</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.fuelConsumedL} L</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Fuel Cons</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.fuelConsumedL} L</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Vehicle</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.vehicle.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Vehicle</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.vehicle.name}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Driver</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.driver.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Driver</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.driver.name}</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-3xs text-slate-400 dark:text-dark-muted pt-1">
+                  <div className="flex items-center justify-between text-3xs pt-1" style={{ color: 'var(--color-text-muted)' }}>
                     <button
                       onClick={() => openDocsModal(t)}
-                      className="flex items-center space-x-1 rounded bg-slate-50 border border-slate-200/50 px-2 py-1 font-semibold text-slate-500 hover:text-brand-600 dark:bg-slate-800/40 dark:border-dark-border"
+                      className="flex items-center space-x-1 rounded border px-2 py-1 font-semibold"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-raised)', color: 'var(--color-text-muted)' }}
                     >
                       <FileText size={10} />
                       <span>Documents</span>
@@ -678,14 +693,16 @@ export default function TripsPage() {
           </div>
 
           {/* Column 4: Cancelled */}
-          <div 
+          <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleCardDrop(e, 'CANCELLED')}
-            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+            className="ops-panel p-3 space-y-4 min-h-[500px] col-header--cancelled"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
-              <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Cancelled ({cancelledTrips.length})</span>
-              <span className="h-2 w-2 rounded-full bg-red-400" />
+            <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk'" }}>
+                Cancelled <span className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>({cancelledTrips.length})</span>
+              </span>
+              <span className="status-badge status-badge--red">Aborted</span>
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {cancelledTrips.map((t) => (
@@ -693,36 +710,36 @@ export default function TripsPage() {
                   key={t.id} 
                   draggable={isDriverOrManager}
                   onDragStart={(e) => handleDragStart(e, t)}
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all opacity-70 cursor-grab active:cursor-grabbing"
+                  className="ops-panel p-4 space-y-3 opacity-70 cursor-grab active:cursor-grabbing"
                 >
-                  <div className="flex justify-between items-start text-xs font-semibold text-red-500">
-                    <span className="font-mono text-2xs truncate max-w-[100px] text-slate-400">ID: {t.id.substring(0, 8)}</span>
-                    <span>Aborted</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="telemetry text-[10px] truncate max-w-[100px]" style={{ color: 'var(--color-text-muted)' }}>ID: {t.id.substring(0, 8)}</span>
+                    <span className="status-badge status-badge--red">Aborted</span>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 dark:text-dark-muted uppercase font-bold tracking-wider">Route</p>
-                    <div className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-slate-200 font-semibold mt-1">
-                      <MapPin size={12} className="text-brand-500 shrink-0" />
+                    <p className="telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Route</p>
+                    <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      <MapPin size={12} style={{ color: 'var(--color-signal-amber)', flexShrink: 0 }} />
                       <span className="truncate">{t.source}</span>
-                      <span className="text-slate-300 font-light">&rarr;</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>&rarr;</span>
                       <span className="truncate">{t.destination}</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-2xs bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg">
+                  <div className="grid grid-cols-2 gap-2 text-[10px] p-2 rounded" style={{ background: 'var(--color-surface-raised)' }}>
                     <div className="col-span-2">
-                      <p className="text-slate-400">Assigned Asset</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.vehicle.name} / {t.driver.name}</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Assigned Asset</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{t.vehicle.name} / {t.driver.name}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Planned Dist</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.plannedDistanceKm} km</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Planned Dist</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.plannedDistanceKm} km</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Cargo</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">{t.cargoWeightKg.toLocaleString()} kg</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Cargo</p>
+                      <p className="telemetry font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.cargoWeightKg.toLocaleString()} kg</p>
                     </div>
                   </div>
-                  <div className="text-3xs text-slate-400 mt-1 dark:text-dark-muted text-right">
+                  <div className="text-3xs mt-1 text-right" style={{ color: 'var(--color-text-muted)' }}>
                     Aborted: {new Date(t.cancelledAt!).toLocaleDateString()}
                   </div>
                 </div>
@@ -736,33 +753,33 @@ export default function TripsPage() {
       {/* Completion Details Input Modal */}
       {selectedTripForComplete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border mb-4">
+          <div className="w-full max-w-md ops-panel p-6">
+
+            <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white">Complete Delivery Run</h3>
-                <p className="text-xs text-slate-400 dark:text-dark-muted">
+                <h3 className="font-display font-semibold text-scale-md" style={{ color: 'var(--color-text-primary)' }}>Complete Delivery Run</h3>
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                   Route: {selectedTripForComplete.source} &rarr; {selectedTripForComplete.destination}
                 </p>
               </div>
-              <button onClick={() => setSelectedTripForComplete(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSelectedTripForComplete(null)} style={{ color: 'var(--color-text-muted)' }}>
                 <X size={18} />
               </button>
             </div>
 
             {completionError && (
-              <div className="mb-4 rounded bg-red-50 p-3 text-xs font-semibold text-red-500">
+              <div className="mb-4 rounded p-3 text-xs font-semibold" style={{ background: 'rgba(255, 92, 92, 0.1)', color: 'var(--color-signal-red)', border: '1px solid rgba(255, 92, 92, 0.2)' }}>
                 {completionError}
               </div>
             )}
 
             <form onSubmit={handleCompleteSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Actual Distance Traveled (km) *
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3" style={{ color: 'var(--color-text-muted)' }}>
                     <Route size={16} />
                   </span>
                   <input
@@ -772,17 +789,18 @@ export default function TripsPage() {
                     placeholder={`Planned: ${selectedTripForComplete.plannedDistanceKm} km`}
                     value={actualDistance}
                     onChange={(e) => setActualDistance(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:border-brand-500 dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border py-2.5 pl-10 pr-4 text-sm focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Total Fuel Consumed (liters) *
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3" style={{ color: 'var(--color-text-muted)' }}>
                     <Gauge size={16} />
                   </span>
                   <input
@@ -793,15 +811,13 @@ export default function TripsPage() {
                     placeholder="e.g. 140"
                     value={fuelConsumed}
                     onChange={(e) => setFuelConsumed(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:border-brand-500 dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border py-2.5 pl-10 pr-4 text-sm focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700 shadow-md transition-all"
-              >
+              <button type="submit" className="w-full btn-primary">
                 Log Delivery Outcome
               </button>
             </form>
@@ -812,51 +828,53 @@ export default function TripsPage() {
       {/* Trip Documents Management Modal */}
       {selectedTripForDocs && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border mb-4">
+          <div className="w-full max-w-lg ops-panel p-6">
+
+            <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white">Trip Documents & Manifests</h3>
-                <p className="text-xs text-slate-400 dark:text-dark-muted">
+                <h3 className="font-display font-semibold text-scale-md" style={{ color: 'var(--color-text-primary)' }}>Trip Documents & Manifests</h3>
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                   Route: {selectedTripForDocs.source} &rarr; {selectedTripForDocs.destination}
                 </p>
               </div>
-              <button onClick={() => setSelectedTripForDocs(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSelectedTripForDocs(null)} style={{ color: 'var(--color-text-muted)' }}>
                 <X size={18} />
               </button>
             </div>
 
             {docUploadError && (
-              <div className="mb-4 rounded bg-red-50 p-2.5 text-xs font-semibold text-red-500">
+              <div className="mb-4 rounded p-2.5 text-xs font-semibold" style={{ background: 'rgba(255, 92, 92, 0.1)', color: 'var(--color-signal-red)', border: '1px solid rgba(255, 92, 92, 0.2)' }}>
                 {docUploadError}
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               {/* Document upload form */}
-              <div className="border-r border-slate-100 dark:border-dark-border pr-0 md:pr-6 space-y-3">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Attach Document</h4>
-                
+              <div className="pr-0 md:pr-6 space-y-3" style={{ borderRight: '1px solid var(--color-border)' }}>
+                <h4 className="telemetry text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Attach Document</h4>
+
                 <form onSubmit={handleDocUpload} className="space-y-3">
                   <div>
-                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Title *</label>
+                    <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Title *</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Bill of Lading, Delivery Receipt"
                       value={docTitle}
                       onChange={(e) => setDocTitle(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                      className="w-full rounded-md border px-2 py-1.5 text-xs focus:outline-none"
+                      style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Document Type *</label>
+                    <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Document Type *</label>
                     <select
                       value={docType}
                       onChange={(e) => setDocType(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                      className="w-full rounded-md border px-2 py-1.5 text-xs focus:outline-none"
+                      style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                     >
                       <option value="BOL">Bill of Lading (BOL)</option>
                       <option value="POD">Proof of Delivery (POD)</option>
@@ -867,20 +885,17 @@ export default function TripsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Select File *</label>
+                    <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Select File *</label>
                     <input
                       type="file"
                       required
                       onChange={(e) => setDocFile(e.target.files?.[0] || null)}
-                      className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-3xs file:bg-slate-100 hover:file:bg-slate-200 dark:file:bg-slate-800"
+                      className="w-full text-xs"
+                      style={{ color: 'var(--color-text-muted)' }}
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={uploadingDoc}
-                    className="w-full flex items-center justify-center space-x-1 rounded bg-brand-600 py-2 text-xs font-semibold text-white hover:bg-brand-700"
-                  >
+                  <button type="submit" disabled={uploadingDoc} className="w-full btn-primary" style={uploadingDoc ? { opacity: 0.5 } : undefined}>
                     <Upload size={12} />
                     <span>{uploadingDoc ? 'Uploading...' : 'Upload File'}</span>
                   </button>
@@ -889,32 +904,27 @@ export default function TripsPage() {
 
               {/* Documents list */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Uploaded Files</h4>
+                <h4 className="telemetry text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Uploaded Files</h4>
 
                 {docsLoading ? (
                   <div className="flex justify-center py-12">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-r-transparent" />
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
                   </div>
                 ) : tripDocs.length === 0 ? (
-                  <p className="text-xs text-slate-400 dark:text-dark-muted text-center py-12">No files uploaded yet.</p>
+                  <p className="text-xs text-center py-12" style={{ color: 'var(--color-text-muted)' }}>No files uploaded yet.</p>
                 ) : (
                   <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                     {tripDocs.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-900/10 border border-slate-100 dark:border-dark-border text-xs">
+                      <div key={doc.id} className="flex items-center justify-between p-2 rounded text-xs" style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)' }}>
                         <div className="min-w-0 pr-2">
-                          <p className="font-semibold text-slate-700 dark:text-slate-300 truncate" title={doc.title}>
+                          <p className="font-semibold truncate" style={{ color: 'var(--color-text-primary)' }} title={doc.title}>
                             {doc.title}
                           </p>
-                          <span className="inline-block text-4xs font-mono font-bold bg-slate-200/50 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-500">
+                          <span className="inline-block text-[8px] font-mono font-bold px-1 py-0.5 rounded" style={{ background: 'var(--color-surface-raised)', color: 'var(--color-text-muted)' }}>
                             {doc.docType}
                           </span>
                         </div>
-                        <a
-                          href={doc.s3Url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs font-bold text-brand-600 hover:underline shrink-0"
-                        >
+                        <a href={doc.s3Url} target="_blank" rel="noreferrer" className="text-xs font-bold hover:underline shrink-0" style={{ color: 'var(--color-signal-amber)' }}>
                           Open
                         </a>
                       </div>
@@ -924,7 +934,6 @@ export default function TripsPage() {
               </div>
 
             </div>
-
           </div>
         </div>
       )}

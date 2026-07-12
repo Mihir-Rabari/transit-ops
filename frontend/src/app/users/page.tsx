@@ -202,9 +202,9 @@ export default function UserManagementPage() {
       case 'SAFETY_OFFICER':
         return 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border-amber-200/50';
       case 'FINANCIAL_ANALYST':
-        return 'bg-slate-100 text-slate-700 dark:bg-slate-800/40 dark:text-slate-300 border-slate-200/50';
+        return 'status-badge status-badge--slate';
       default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return 'status-badge status-badge--slate';
     }
   };
 
@@ -218,12 +218,12 @@ export default function UserManagementPage() {
       {/* Header Panel */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">User Administration</h2>
-          <p className="text-sm text-slate-400 dark:text-dark-muted">Manage system authentication profiles, roles, and driver links.</p>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>User Administration</h2>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Manage system authentication profiles, roles, and driver links.</p>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center space-x-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 shadow-md transition-all self-start sm:self-auto"
+          className="btn-primary self-start sm:self-auto"
         >
           <Plus size={16} />
           <span>Create User</span>
@@ -232,10 +232,10 @@ export default function UserManagementPage() {
 
       {/* Add User Form Panel */}
       {showAddForm && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-md animate-fadeIn">
-          <div className="mb-4 flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
-            <h3 className="font-bold text-slate-800 dark:text-white">Create New User Account</h3>
-            <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="ops-panel p-5 animate-fadeIn">
+          <div className="mb-4 flex items-center justify-between pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Create New User Account</h3>
+            <button onClick={() => setShowAddForm(false)} className="hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
               <X size={18} />
             </button>
           </div>
@@ -248,47 +248,47 @@ export default function UserManagementPage() {
 
           <form onSubmit={handleCreateUser} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Full Name *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Samuel L. Jackson"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Email Address *</label>
               <input
                 type="email"
                 required
                 placeholder="e.g. sam@transitops.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Initial Password *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Initial Password *</label>
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Role Type *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Role Type *</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
                 <option value="ADMIN">Administrator</option>
                 <option value="FLEET_MANAGER">Fleet Manager</option>
@@ -300,11 +300,11 @@ export default function UserManagementPage() {
 
             {role === 'DRIVER' && (
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Link Driver Profile</label>
+                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Link Driver Profile</label>
                 <select
                   value={driverId}
                   onChange={(e) => setDriverId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 >
                   <option value="">-- No Profile Association --</option>
                   {drivers.map(d => (
@@ -317,7 +317,7 @@ export default function UserManagementPage() {
             <div className="flex items-end sm:col-span-2 md:col-span-3">
               <button
                 type="submit"
-                className="w-full sm:w-auto rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+                className="btn-primary w-full sm:w-auto px-6 py-2.5 text-sm"
               >
                 Create User
               </button>
@@ -327,9 +327,9 @@ export default function UserManagementPage() {
       )}
 
       {/* Directory Filter Panel */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-dark-border dark:bg-dark-card shadow-sm">
+      <div className="ops-panel flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
         <div className="relative flex-1">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3" style={{ color: 'var(--color-text-muted)' }}>
             <Search size={16} />
           </span>
           <input
@@ -337,16 +337,16 @@ export default function UserManagementPage() {
             placeholder="Search by user name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+            className="w-full rounded-md border py-2 pl-10 pr-4 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
           />
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-bold text-slate-400 uppercase">Role:</span>
+          <span className="text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Role:</span>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+            className="rounded-md border px-3 py-1.5 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
           >
             <option value="">All Roles</option>
             <option value="ADMIN">Administrator</option>
@@ -361,18 +361,18 @@ export default function UserManagementPage() {
       {/* Directory Table */}
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-500 border-r-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
-          <ShieldAlert className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
-          <h3 className="text-md font-bold text-slate-700 dark:text-slate-300">No users found</h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-dark-muted">Verify your filters or search constraints.</p>
+        <div className="ops-panel p-8 text-center">
+          <ShieldAlert className="mx-auto h-12 w-12 mb-3" style={{ color: 'var(--color-text-muted)', opacity: 0.3 }} />
+          <h3 className="text-md font-bold" style={{ color: 'var(--color-text-muted)' }}>No users found</h3>
+          <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>Verify your filters or search constraints.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-dark-border dark:bg-dark-card shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-dark-border text-left text-sm">
-            <thead className="bg-slate-50/70 dark:bg-slate-900/40 text-xs font-semibold text-slate-400 dark:text-dark-muted uppercase tracking-wider">
+        <div className="overflow-x-auto ops-panel">
+          <table className="min-w-full divide-y divide-[var(--color-border)] text-left text-sm">
+            <thead className="text-xs font-semibold uppercase tracking-wider" style={{ background: 'rgba(35,43,55,0.4)', color: 'var(--color-text-muted)' }}>
               <tr>
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">System Role</th>
@@ -383,16 +383,16 @@ export default function UserManagementPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
               {filteredUsers.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors">
+                <tr key={u.id} className="transition-colors hover:bg-[var(--color-surface-raised)]">
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-950/20 font-semibold text-brand-700 dark:text-brand-400">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full font-semibold" style={{ background: 'rgba(255,176,32,0.12)', color: 'var(--color-signal-amber)' }}>
                         {u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-800 dark:text-white">{u.name}</p>
-                        <p className="text-xs text-slate-400 dark:text-dark-muted flex items-center">
-                          <Mail size={12} className="mr-1 text-slate-300" />
+                        <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{u.name}</p>
+                        <p className="text-xs flex items-center" style={{ color: 'var(--color-text-muted)' }}>
+                          <Mail size={12} className="mr-1" style={{ color: 'var(--color-text-muted)' }} />
                           {u.email}
                         </p>
                       </div>
@@ -415,24 +415,24 @@ export default function UserManagementPage() {
                         Unlinked Driver
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-400 dark:text-dark-muted">N/A</span>
+                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>N/A</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-dark-muted text-xs">
+                  <td className="px-6 py-4 text-[var(--color-text-muted)] text-xs">
                     {new Date(u.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center items-center space-x-3">
                       <button
                         onClick={() => openEditModal(u)}
-                        className="text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
+                        className="text-[var(--color-text-muted)] hover:text-[var(--color-signal-amber)] dark:hover:text-brand-400 transition-colors"
                       >
                         <Edit3 size={16} />
                       </button>
                       <button
                         onClick={() => handleDeleteUser(u.id)}
                         disabled={user?.id === u.id}
-                        className="text-slate-400 hover:text-red-500 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                        className="text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-30 disabled:hover:text-[var(--color-text-muted)] transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -448,14 +448,14 @@ export default function UserManagementPage() {
       {/* Edit User Modal */}
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
+          <div className="w-full max-w-md ops-panel p-6">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border mb-4">
+            <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white">Edit User Profile</h3>
-                <p className="text-xs text-slate-400 dark:text-dark-muted font-mono">{editingUser.email}</p>
+                <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Edit User Profile</h3>
+                <p className="text-xs text-[var(--color-text-muted)] dark:text-dark-muted font-mono">{editingUser.email}</p>
               </div>
-              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setEditingUser(null)} className="hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
                 <X size={18} />
               </button>
             </div>
@@ -468,22 +468,24 @@ export default function UserManagementPage() {
 
             <form onSubmit={handleUpdateUser} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Full Name</label>
                 <input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                  className="w-full rounded-md border px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">System Role</label>
+                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>System Role</label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value as any)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                  className="w-full rounded-md border px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 >
                   <option value="ADMIN">Administrator</option>
                   <option value="FLEET_MANAGER">Fleet Manager</option>
@@ -495,11 +497,12 @@ export default function UserManagementPage() {
 
               {editRole === 'DRIVER' && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Link Driver Profile</label>
+                  <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Link Driver Profile</label>
                   <select
                     value={editDriverId}
                     onChange={(e) => setEditDriverId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border px-3 py-2.5 text-sm focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   >
                     <option value="">-- No Profile Association --</option>
                     {drivers.map(d => (
@@ -510,11 +513,11 @@ export default function UserManagementPage() {
               )}
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Change Password (leave empty to keep current)
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3" style={{ color: 'var(--color-text-muted)' }}>
                     <Lock size={16} />
                   </span>
                   <input
@@ -522,14 +525,15 @@ export default function UserManagementPage() {
                     placeholder="••••••••"
                     value={editPassword}
                     onChange={(e) => setEditPassword(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border py-2.5 pl-10 pr-4 text-sm focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-brand-600 py-3 text-sm font-semibold text-white hover:bg-brand-700 shadow-md transition-all"
+                className="btn-primary w-full py-3 text-sm"
               >
                 Save User Profile
               </button>

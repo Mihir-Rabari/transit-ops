@@ -214,30 +214,33 @@ export default function DriverDashboard() {
     <div className="space-y-6">
       
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-600 p-6 text-white shadow-lg">
-        <div className="relative z-10">
-          <h2 className="text-2xl font-bold">Driver Terminal: {user.name}</h2>
-          <p className="mt-1 text-sm text-emerald-100 font-mono">Company ID: {user.companyId}</p>
+      <div className="ops-panel p-5">
+        <div>
+          <h2 className="font-display font-bold text-scale-xl" style={{ color: 'var(--color-text-primary)' }}>
+            Driver Terminal: {user.name}
+          </h2>
+          <p className="telemetry text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+            Company ID: {user.companyId}
+          </p>
         </div>
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-500/20 blur-2xl" />
       </div>
 
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-emerald-500 border-r-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-center dark:border-red-950/20 dark:bg-red-950/10">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-3" />
-          <h3 className="text-lg font-bold text-red-800 dark:text-red-400">Failed to connect driver account</h3>
-          <p className="mt-1 text-sm text-red-600 dark:text-red-500">{error}</p>
+        <div className="ops-panel p-6 text-center" style={{ borderColor: 'rgba(255, 92, 92, 0.3)' }}>
+          <AlertCircle className="mx-auto h-10 w-10 mb-3" style={{ color: 'var(--color-signal-red)' }} />
+          <h3 className="text-scale-lg font-display font-semibold" style={{ color: 'var(--color-text-primary)' }}>Failed to connect driver account</h3>
+          <p className="mt-1 text-scale-sm" style={{ color: 'var(--color-text-muted)' }}>{error}</p>
         </div>
       ) : !driverProfile ? (
         // Unlinked profile empty state
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/30 dark:bg-amber-950/10">
-          <ShieldAlert className="mx-auto h-12 w-12 text-amber-500 mb-3" />
-          <h3 className="text-md font-bold text-amber-800 dark:text-amber-400">Account Configuration Incomplete</h3>
-          <p className="mt-1 text-sm text-amber-600 dark:text-amber-500">
+        <div className="ops-panel p-6 text-center" style={{ borderColor: 'rgba(255, 176, 32, 0.3)' }}>
+          <ShieldAlert className="mx-auto h-10 w-10 mb-3" style={{ color: 'var(--color-signal-amber)' }} />
+          <h3 className="text-scale-lg font-display font-semibold" style={{ color: 'var(--color-text-primary)' }}>Account Configuration Incomplete</h3>
+          <p className="mt-1 text-scale-sm" style={{ color: 'var(--color-text-muted)' }}>
             Your login account is not linked to any Driver Profile yet. Please contact an Administrator to bind your account to a profile.
           </p>
         </div>
@@ -248,38 +251,36 @@ export default function DriverDashboard() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Current Active Trip Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-sm">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-                <Route className="mr-2 text-emerald-500" size={18} />
+            <div className="ops-panel p-5">
+              <h3 className="text-scale-md font-display font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                <Route style={{ color: 'var(--color-signal-green)' }} size={18} />
                 Ongoing Transit Assignment
               </h3>
 
               {activeTrip ? (
-                <div className="rounded-lg border border-emerald-100 bg-emerald-50/20 p-4 dark:border-emerald-950/30 dark:bg-emerald-950/5">
+                <div className="ops-panel p-4" style={{ background: 'var(--color-surface-raised)' }}>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
                     <div>
-                      <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 text-2xs font-semibold text-emerald-700">
-                        DISPATCHED
-                      </span>
-                      <h4 className="mt-2 font-bold text-slate-800 dark:text-white">
+                      <span className="status-badge status-badge--amber">DISPATCHED</span>
+                      <h4 className="mt-2 font-bold" style={{ color: 'var(--color-text-primary)' }}>
                         {activeTrip.source} &rarr; {activeTrip.destination}
                       </h4>
-                      <p className="text-xs text-slate-400 dark:text-dark-muted mt-1">
-                        Vehicle: {activeTrip.vehicle.name} ({activeTrip.vehicle.registrationNumber})
+                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                        Vehicle: <span className="telemetry">{activeTrip.vehicle.name} ({activeTrip.vehicle.registrationNumber})</span>
                       </p>
                     </div>
 
                     <div className="flex sm:flex-col gap-2 self-start">
                       <button
                         onClick={() => setShowCompleteModal(activeTrip.id)}
-                        className="flex items-center justify-center space-x-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 shadow-sm"
+                        className="btn-primary text-xs"
                       >
                         <CheckCircle2 size={14} />
                         <span>Complete</span>
                       </button>
                       <button
                         onClick={() => handleCancel(activeTrip.id)}
-                        className="flex items-center justify-center space-x-1 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-dark-border dark:bg-dark-card dark:text-slate-300 dark:hover:bg-slate-800"
+                        className="btn-ghost text-xs"
                       >
                         <XCircle size={14} />
                         <span>Cancel</span>
@@ -287,43 +288,41 @@ export default function DriverDashboard() {
                     </div>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-dark-border pt-3 text-xs">
+                  <div className="mt-4 grid grid-cols-2 gap-4 pt-3 text-xs" style={{ borderTop: '1px solid var(--color-border)' }}>
                     <div>
-                      <p className="text-slate-400">Cargo Weight</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{activeTrip.cargoWeightKg} kg</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Cargo Weight</p>
+                      <p className="telemetry font-medium mt-0.5" style={{ color: 'var(--color-text-primary)' }}>{activeTrip.cargoWeightKg} kg</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Planned Distance</p>
-                      <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{activeTrip.plannedDistanceKm} km</p>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Planned Distance</p>
+                      <p className="telemetry font-medium mt-0.5" style={{ color: 'var(--color-text-primary)' }}>{activeTrip.plannedDistanceKm} km</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 dark:text-dark-muted text-center py-6">
+                <p className="text-xs text-center py-6" style={{ color: 'var(--color-text-muted)' }}>
                   No active trip dispatched currently.
                 </p>
               )}
             </div>
 
             {/* Pending Assignment Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-sm">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-                <Calendar className="mr-2 text-blue-500" size={18} />
+            <div className="ops-panel p-5">
+              <h3 className="text-scale-md font-display font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                <Calendar style={{ color: 'var(--color-signal-amber)' }} size={18} />
                 Pending Assigned Trips
               </h3>
 
               {assignedTrip ? (
-                <div className="rounded-lg border border-blue-100 bg-blue-50/10 p-4 dark:border-blue-900/10">
+                <div className="ops-panel p-4" style={{ background: 'var(--color-surface-raised)' }}>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
                     <div>
-                      <span className="inline-flex items-center rounded-md bg-blue-50 border border-blue-200/50 px-2 py-0.5 text-2xs font-semibold text-blue-700">
-                        ASSIGNED (DRAFT)
-                      </span>
-                      <h4 className="mt-2 font-bold text-slate-800 dark:text-white">
+                      <span className="status-badge status-badge--slate">ASSIGNED (DRAFT)</span>
+                      <h4 className="mt-2 font-bold" style={{ color: 'var(--color-text-primary)' }}>
                         {assignedTrip.source} &rarr; {assignedTrip.destination}
                       </h4>
-                      <p className="text-xs text-slate-400 dark:text-dark-muted mt-1">
-                        Vehicle: {assignedTrip.vehicle.name} ({assignedTrip.vehicle.registrationNumber})
+                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                        Vehicle: <span className="telemetry">{assignedTrip.vehicle.name} ({assignedTrip.vehicle.registrationNumber})</span>
                       </p>
                     </div>
 
@@ -331,54 +330,55 @@ export default function DriverDashboard() {
                       <button
                         onClick={() => handleDispatch(assignedTrip.id)}
                         disabled={!!activeTrip}
-                        className="flex items-center justify-center space-x-1 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="btn-primary text-xs"
+                        style={!!activeTrip ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                       >
                         <Play size={14} />
                         <span>Start Dispatch</span>
                       </button>
                       <button
                         onClick={() => handleCancel(assignedTrip.id)}
-                        className="flex items-center justify-center space-x-1 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-dark-border dark:bg-dark-card dark:text-slate-300 dark:hover:bg-slate-800"
+                        className="btn-ghost text-xs"
                       >
                         <XCircle size={14} />
                         <span>Reject</span>
                       </button>
                     </div>
                   </div>
-                  
+
                   {activeTrip && (
-                    <p className="text-2xs text-amber-500 font-semibold mt-2">
+                    <p className="text-[10px] font-semibold mt-2" style={{ color: 'var(--color-signal-amber)' }}>
                       * You cannot start this trip until your current dispatched trip is completed or cancelled.
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 dark:text-dark-muted text-center py-6">
+                <p className="text-xs text-center py-6" style={{ color: 'var(--color-text-muted)' }}>
                   No pending assignments on your schedule.
                 </p>
               )}
             </div>
 
             {/* Document Uploads List */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-sm">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-                <FileText className="mr-2 text-purple-500" size={18} />
+            <div className="ops-panel p-5">
+              <h3 className="text-scale-md font-display font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                <FileText style={{ color: 'var(--color-signal-amber)' }} size={18} />
                 My Verified Documents
               </h3>
 
               {documents.length === 0 ? (
-                <p className="text-xs text-slate-400 dark:text-dark-muted text-center py-6">
+                <p className="text-xs text-center py-6" style={{ color: 'var(--color-text-muted)' }}>
                   No documents uploaded yet. Submit files below.
                 </p>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {documents.map((doc) => (
-                    <div key={doc.id} className="flex items-start justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/30 dark:border-dark-border dark:bg-slate-900/10">
+                    <div key={doc.id} className="flex items-start justify-between p-3 rounded-lg" style={{ background: 'var(--color-surface-raised)', border: '1px solid var(--color-border)' }}>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{doc.title}</p>
-                        <p className="text-3xs text-slate-400 dark:text-dark-muted mt-0.5 font-sans uppercase font-bold">{doc.docType}</p>
+                        <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{doc.title}</p>
+                        <p className="text-[10px] mt-0.5 font-sans uppercase font-bold" style={{ color: 'var(--color-text-muted)' }}>{doc.docType}</p>
                         {doc.expiryDate && (
-                          <p className="text-3xs text-slate-400 dark:text-dark-muted mt-0.5">
+                          <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                             Expires: {new Date(doc.expiryDate).toLocaleDateString()}
                           </p>
                         )}
@@ -387,7 +387,8 @@ export default function DriverDashboard() {
                         href={doc.s3Url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs font-bold text-brand-600 hover:underline shrink-0 pl-2"
+                        className="text-xs font-bold shrink-0 pl-2 hover:underline"
+                        style={{ color: 'var(--color-signal-amber)' }}
                       >
                         View file
                       </a>
@@ -403,86 +404,88 @@ export default function DriverDashboard() {
           <div className="space-y-6">
             
             {/* Driver Profile Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-sm">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-                <User className="mr-2 text-indigo-500" size={18} />
+            <div className="ops-panel p-5">
+              <h3 className="text-scale-md font-display font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                <User style={{ color: 'var(--color-signal-amber)' }} size={18} />
                 Driver Profile Card
               </h3>
 
               <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 font-bold text-lg">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg font-bold text-lg" style={{ background: 'var(--color-surface-raised)', color: 'var(--color-text-primary)' }}>
                     {driverProfile.name[0].toUpperCase()}
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-white">{driverProfile.name}</h4>
-                    <p className="text-xs text-slate-400 dark:text-dark-muted font-sans uppercase font-bold">{driverProfile.status}</p>
+                    <h4 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{driverProfile.name}</h4>
+                    <p className="text-xs telemetry mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{driverProfile.status}</p>
                   </div>
                 </div>
 
-                <div className="border-t border-slate-100 dark:border-dark-border pt-4 space-y-2 text-xs">
+                <div className="pt-4 space-y-2 text-xs" style={{ borderTop: '1px solid var(--color-border)' }}>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">License Number</span>
-                    <span className="font-semibold text-slate-800 dark:text-white">{driverProfile.licenseNumber}</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>License Number</span>
+                    <span className="telemetry font-semibold" style={{ color: 'var(--color-text-primary)' }}>{driverProfile.licenseNumber}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">License Class</span>
-                    <span className="font-semibold text-slate-800 dark:text-white">{driverProfile.licenseCategory}</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>License Class</span>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{driverProfile.licenseCategory}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">License Expiry</span>
-                    <span className="font-semibold text-slate-800 dark:text-white">
+                    <span style={{ color: 'var(--color-text-muted)' }}>License Expiry</span>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                       {new Date(driverProfile.licenseExpiryDate).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Contact Number</span>
-                    <span className="font-semibold text-slate-800 dark:text-white">{driverProfile.contactNumber}</span>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Contact Number</span>
+                    <span className="telemetry font-semibold" style={{ color: 'var(--color-text-primary)' }}>{driverProfile.contactNumber}</span>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-emerald-50/50 p-3 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-900/10 flex items-center space-x-2">
-                  <Award className="text-emerald-600 shrink-0" size={18} />
+                <div className="rounded-lg p-3 flex items-center gap-2" style={{ background: 'rgba(62, 207, 142, 0.08)', border: '1px solid rgba(62, 207, 142, 0.2)' }}>
+                  <Award style={{ color: 'var(--color-signal-green)' }} className="shrink-0" size={18} />
                   <div className="min-w-0">
-                    <p className="text-3xs font-bold uppercase tracking-wider text-emerald-700">Safety Compliance Score</p>
-                    <p className="text-lg font-extrabold text-emerald-600 mt-0.5">{driverProfile.safetyScore}/100</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-signal-green)' }}>Safety Compliance Score</p>
+                    <p className="text-lg font-extrabold mt-0.5 telemetry" style={{ color: 'var(--color-signal-green)' }}>{driverProfile.safetyScore}/100</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Document Upload Form */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-sm">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-                <Upload className="mr-2 text-brand-500" size={18} />
+            <div className="ops-panel p-5">
+              <h3 className="text-scale-md font-display font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                <Upload style={{ color: 'var(--color-signal-amber)' }} size={18} />
                 Upload Driver Document
               </h3>
 
               {uploadError && (
-                <div className="mb-3 rounded bg-red-50 p-2 text-3xs font-semibold text-red-500">
+                <div className="mb-3 rounded p-2 text-[10px] font-semibold" style={{ background: 'rgba(255, 92, 92, 0.1)', color: 'var(--color-signal-red)' }}>
                   {uploadError}
                 </div>
               )}
 
               <form onSubmit={handleFileUpload} className="space-y-3.5">
                 <div>
-                  <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Document Title *</label>
+                  <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Document Title *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. License scan, Medical cert"
                     value={docTitle}
                     onChange={(e) => setDocTitle(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border px-3 py-2 text-xs focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Document Type *</label>
+                  <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Document Type *</label>
                   <select
                     value={docType}
                     onChange={(e) => setDocType(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border px-3 py-2 text-xs focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   >
                     <option value="License">Driving License Scan</option>
                     <option value="Medical">Medical Check Certificate</option>
@@ -492,29 +495,32 @@ export default function DriverDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Expiry Date (optional)</label>
+                  <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Expiry Date (optional)</label>
                   <input
                     type="date"
                     value={docExpiry}
                     onChange={(e) => setDocExpiry(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    className="w-full rounded-md border px-3 py-2 text-xs focus:outline-none"
+                    style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Attach File (PDF, PNG, JPG) *</label>
+                  <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Attach File (PDF, PNG, JPG) *</label>
                   <input
                     type="file"
                     required
                     onChange={(e) => setDocFile(e.target.files?.[0] || null)}
-                    className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-2xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-800 dark:file:text-slate-300"
+                    className="w-full text-xs"
+                    style={{ color: 'var(--color-text-muted)' }}
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={uploadingDoc}
-                  className="w-full flex items-center justify-center space-x-1.5 rounded-lg bg-brand-600 py-2.5 text-xs font-semibold text-white hover:bg-brand-700 disabled:bg-brand-400 transition-all shadow-sm"
+                  className="w-full btn-primary"
+                  style={uploadingDoc ? { opacity: 0.5 } : undefined}
                 >
                   <Upload size={14} />
                   <span>{uploadingDoc ? 'Uploading...' : 'Upload Document'}</span>
@@ -529,19 +535,19 @@ export default function DriverDashboard() {
       {/* Completion Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
-            <h4 className="font-bold text-slate-800 dark:text-white mb-2">Finalize Transit Log</h4>
-            <p className="text-xs text-slate-400 dark:text-dark-muted mb-4">Input the verified final mileage and fuel consumed.</p>
+          <div className="w-full max-w-sm ops-panel p-5">
+            <h4 className="font-display font-semibold text-scale-md mb-2" style={{ color: 'var(--color-text-primary)' }}>Finalize Transit Log</h4>
+            <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>Input the verified final mileage and fuel consumed.</p>
 
             {completeError && (
-              <div className="mb-3 rounded bg-red-50 p-2.5 text-xs font-semibold text-red-500">
+              <div className="mb-3 rounded p-2.5 text-xs font-semibold" style={{ background: 'rgba(255, 92, 92, 0.1)', color: 'var(--color-signal-red)' }}>
                 {completeError}
               </div>
             )}
 
             <form onSubmit={handleCompleteSubmit} className="space-y-4">
               <div>
-                <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Actual Distance Covered (km) *</label>
+                <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Actual Distance Covered (km) *</label>
                 <input
                   type="number"
                   step="0.1"
@@ -549,12 +555,13 @@ export default function DriverDashboard() {
                   placeholder="e.g. 120.5"
                   value={actualDistance}
                   onChange={(e) => setActualDistance(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                  style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Fuel Consumed (Liters) *</label>
+                <label className="block telemetry text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>Fuel Consumed (Liters) *</label>
                 <input
                   type="number"
                   step="0.1"
@@ -562,21 +569,22 @@ export default function DriverDashboard() {
                   placeholder="e.g. 24.8"
                   value={fuelConsumed}
                   onChange={(e) => setFuelConsumed(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                  style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                 />
               </div>
 
-              <div className="flex space-x-3 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 shadow-sm"
+                  className="flex-1 btn-primary"
                 >
                   Complete Trip
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCompleteModal(null)}
-                  className="flex-1 rounded-lg border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-dark-border dark:bg-dark-card dark:text-slate-300 dark:hover:bg-slate-800"
+                  className="flex-1 btn-ghost"
                 >
                   Cancel
                 </button>

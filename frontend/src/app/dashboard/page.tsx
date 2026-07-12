@@ -30,7 +30,7 @@ export default function DashboardRedirector() {
   }, [user, loading, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-dark-bg text-brand-500">
+    <div className="flex h-screen items-center justify-center" style={{ background: 'var(--color-base)', color: 'var(--color-signal-amber)' }}>
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
     </div>
   );

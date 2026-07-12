@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiRequest } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -16,7 +16,6 @@ import {
   FileText,
   Upload
 } from 'lucide-react';
-import WizardModal from '../components/WizardModal';
 
 interface Driver {
   id: string;
@@ -53,7 +52,6 @@ export default function DriversPage() {
   const [contactNum, setContactNum] = useState('');
   const [safetyScore, setSafetyScore] = useState('100');
   const [formError, setFormError] = useState<string | null>(null);
-  const [step, setStep] = useState(0);
 
   // Search/Filters State
   const [search, setSearch] = useState('');
@@ -88,19 +86,8 @@ export default function DriversPage() {
     fetchDrivers();
   }, [fetchDrivers]);
 
-  const closeModal = () => {
-    setShowAddForm(false);
-    setStep(0);
-    setName('');
-    setLicenseNum('');
-    setLicenseCat('');
-    setLicenseExp('');
-    setContactNum('');
-    setSafetyScore('100');
-    setFormError(null);
-  };
-
-  const handleAddDriver = async () => {
+  const handleAddDriver = async (e: React.FormEvent) => {
+    e.preventDefault();
     setFormError(null);
 
     if (!name || !licenseNum || !licenseCat || !licenseExp || !contactNum) {
@@ -121,7 +108,14 @@ export default function DriversPage() {
         })
       });
 
-      closeModal();
+      // Reset form and refetch
+      setName('');
+      setLicenseNum('');
+      setLicenseCat('');
+      setLicenseExp('');
+      setContactNum('');
+      setSafetyScore('100');
+      setShowAddForm(false);
       fetchDrivers();
     } catch (err: any) {
       setFormError(err.message || 'Failed to add driver');
@@ -226,12 +220,6 @@ export default function DriversPage() {
 
   const isFleetManager = user?.role === 'FLEET_MANAGER' || user?.role === 'ADMIN';
 
-  const canProceed = useMemo(() => {
-    if (step === 0) return !!(name && contactNum);
-    if (step === 1) return !!(licenseNum && licenseCat && licenseExp);
-    return true;
-  }, [step, name, contactNum, licenseNum, licenseCat, licenseExp]);
-
   return (
     <div className="space-y-6">
       
@@ -243,7 +231,7 @@ export default function DriversPage() {
         </div>
         {isFleetManager && (
           <button
-            onClick={() => setShowAddForm(true)}
+            onClick={() => setShowAddForm(!showAddForm)}
             className="btn-primary self-start sm:self-auto"
           >
             <Plus size={16} />
@@ -252,101 +240,105 @@ export default function DriversPage() {
         )}
       </div>
 
+      {/* Add Driver Form Panel */}
       {showAddForm && isFleetManager && (
-        <WizardModal
-          open={showAddForm}
-          onClose={closeModal}
-          title="Add Driver Profile"
-          icon={<UserPlus size={18} style={{ color: 'var(--color-signal-amber)' }} />}
-          steps={['Personal Info', 'License Details', 'Compliance']}
-          currentStep={step}
-          onStepChange={setStep}
-          onSubmit={handleAddDriver}
-          error={formError}
-          canProceed={canProceed}
-          submitLabel="Create Profile"
-        >
-          {step === 0 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Full Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Marcus Miller"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Contact Number *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. +1 555-0199"
-                  value={contactNum}
-                  onChange={(e) => setContactNum(e.target.value)}
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
+        <div className="ops-panel p-5 animate-fadeIn">
+          <div className="mb-4 flex items-center justify-between pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Add Driver Profile</h3>
+            <button onClick={() => setShowAddForm(false)} className="hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
+              <X size={18} />
+            </button>
+          </div>
+
+          {formError && (
+            <div className="mb-4 rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-500 border border-red-200/50">
+              {formError}
             </div>
           )}
 
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>License Number *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. DL-12048912"
-                  value={licenseNum}
-                  onChange={(e) => setLicenseNum(e.target.value)}
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>License Category/Class *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Class A Commercial"
-                  value={licenseCat}
-                  onChange={(e) => setLicenseCat(e.target.value)}
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>License Expiry Date *</label>
-                <input
-                  type="date"
-                  required
-                  value={licenseExp}
-                  onChange={(e) => setLicenseExp(e.target.value)}
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
+          <form onSubmit={handleAddDriver} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Full Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Marcus Miller"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
             </div>
-          )}
 
-          {step === 2 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Initial Safety Compliance Score (0-100)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  placeholder="100"
-                  value={safetyScore}
-                  onChange={(e) => setSafetyScore(e.target.value)}
-                  className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>License Number *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. DL-12048912"
+                value={licenseNum}
+                onChange={(e) => setLicenseNum(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
             </div>
-          )}
-        </WizardModal>
+
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>License Category/Class *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Class A Commercial"
+                value={licenseCat}
+                onChange={(e) => setLicenseCat(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>License Expiry Date *</label>
+              <input
+                type="date"
+                required
+                value={licenseExp}
+                onChange={(e) => setLicenseExp(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Contact Number *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. +1 555-0199"
+                value={contactNum}
+                onChange={(e) => setContactNum(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Initial Safety Compliance Score (0-100)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                placeholder="100"
+                value={safetyScore}
+                onChange={(e) => setSafetyScore(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
+            </div>
+
+            <div className="flex items-end sm:col-span-2 md:col-span-3">
+              <button
+                type="submit"
+                className="btn-primary w-full sm:w-auto px-6 py-2.5 text-sm"
+              >
+                Create Profile
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Directory Filter Panel */}
@@ -458,12 +450,10 @@ export default function DriversPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-1.5">
-                        <span className="font-bold text-sm"
-                          style={{ color: d.safetyScore >= 85 ? 'var(--color-signal-green)' : d.safetyScore >= 70 ? 'var(--color-signal-amber)' : 'var(--color-signal-red)' }}
-                        >
+                        <span className={`font-bold text-sm ${d.safetyScore >= 85 ? 'text-emerald-500' : d.safetyScore >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
                           {d.safetyScore}
                         </span>
-                        <span className="text-2xs" style={{ color: 'var(--color-text-muted)' }}>/100</span>
+                        <span className="text-2xs text-slate-400">/100</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">

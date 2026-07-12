@@ -192,9 +192,9 @@ export default function VehiclesPage() {
       case 'IN_SHOP':
         return 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border-amber-200/40';
       case 'RETIRED':
-        return 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border-red-200/40';
+        return 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border-[rgba(255,92,92,0.3)]/40';
       default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return 'status-badge status-badge--slate';
     }
   };
 
@@ -204,13 +204,13 @@ export default function VehiclesPage() {
       {/* Header Panel */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">Vehicle Registry</h2>
-          <p className="text-sm text-slate-400 dark:text-dark-muted">Manage company logistics assets and operational parameters.</p>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Vehicle Registry</h2>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Manage company logistics assets and operational parameters.</p>
         </div>
         {isFleetManager && (
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center space-x-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 shadow-md transition-all self-start sm:self-auto"
+            className="btn-primary self-start sm:self-auto"
           >
             <Plus size={16} />
             <span>Add Vehicle</span>
@@ -220,51 +220,51 @@ export default function VehiclesPage() {
 
       {/* Add Form Panel */}
       {showAddForm && isFleetManager && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-md animate-fadeIn">
-          <div className="mb-4 flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
-            <h3 className="font-bold text-slate-800 dark:text-white">Register New Vehicle</h3>
-            <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="ops-panel p-5 animate-fadeIn">
+          <div className="mb-4 flex items-center justify-between pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Register New Vehicle</h3>
+            <button onClick={() => setShowAddForm(false)} className="hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
               <X size={18} />
             </button>
           </div>
 
           {formError && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-500 border border-red-200/50">
+            <div className="mb-4 rounded-lg bg-red-50 p-3 text-xs font-semibold text-[var(--color-signal-red)] border border-[rgba(255,92,92,0.3)]/50">
               {formError}
             </div>
           )}
 
           <form onSubmit={handleAddVehicle} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Registration Number *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Registration Number *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. CA-459-ZZ"
                 value={regNum}
                 onChange={(e) => setRegNum(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Vehicle Name / Model *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Vehicle Name / Model *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Scania R500"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Vehicle Type *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Vehicle Type *</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
                 <option value="Truck">Truck</option>
                 <option value="Van">Van</option>
@@ -275,7 +275,7 @@ export default function VehiclesPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Max Load Capacity (kg) *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Max Load Capacity (kg) *</label>
               <input
                 type="number"
                 required
@@ -283,23 +283,23 @@ export default function VehiclesPage() {
                 placeholder="e.g. 15000"
                 value={capacity}
                 onChange={(e) => setCapacity(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Initial Odometer (km)</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Initial Odometer (km)</label>
               <input
                 type="number"
                 min="0"
                 value={odometer}
                 onChange={(e) => setOdometer(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Acquisition Cost ($) *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Acquisition Cost ($) *</label>
               <input
                 type="number"
                 required
@@ -307,25 +307,25 @@ export default function VehiclesPage() {
                 placeholder="e.g. 85000"
                 value={acqCost}
                 onChange={(e) => setAcqCost(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Operating Region</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Operating Region</label>
               <input
                 type="text"
                 placeholder="e.g. North"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
 
             <div className="flex items-end sm:col-span-2 md:col-span-2">
               <button
                 type="submit"
-                className="w-full sm:w-auto rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+                className="btn-primary w-full sm:w-auto px-6 py-2.5 text-sm"
               >
                 Register Vehicle
               </button>
@@ -335,9 +335,9 @@ export default function VehiclesPage() {
       )}
 
       {/* Directory Filter Panel */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-dark-border dark:bg-dark-card shadow-sm">
+      <div className="ops-panel flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
         <div className="relative flex-1">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3" style={{ color: 'var(--color-text-muted)' }}>
             <Search size={16} />
           </span>
           <input
@@ -345,17 +345,17 @@ export default function VehiclesPage() {
             placeholder="Search by registration number or name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+            className="w-full rounded-md border py-2 pl-10 pr-4 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
           />
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-bold text-slate-400 uppercase">Status:</span>
+            <span className="text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+              className="rounded-md border px-3 py-1.5 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
             >
               <option value="">All Statuses</option>
               <option value="AVAILABLE">Available</option>
@@ -366,11 +366,11 @@ export default function VehiclesPage() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-bold text-slate-400 uppercase">Sort:</span>
+            <span className="text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Sort:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+              className="rounded-md border px-3 py-1.5 text-sm focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
             >
               <option value="name">Name</option>
               <option value="odometer">Odometer (High-Low)</option>
@@ -384,18 +384,18 @@ export default function VehiclesPage() {
       {/* Directory Table */}
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-500 border-r-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
         </div>
       ) : filteredVehicles.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
-          <ShieldAlert className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
-          <h3 className="text-md font-bold text-slate-700 dark:text-slate-300">No vehicles matching your query</h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-dark-muted">Verify your filters or search constraints.</p>
+        <div className="ops-panel p-8 text-center">
+          <ShieldAlert className="mx-auto h-12 w-12 mb-3" style={{ color: 'var(--color-text-muted)', opacity: 0.3 }} />
+          <h3 className="text-md font-bold" style={{ color: 'var(--color-text-muted)' }}>No vehicles matching your query</h3>
+          <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>Verify your filters or search constraints.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-dark-border dark:bg-dark-card shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-dark-border text-left text-sm">
-            <thead className="bg-slate-50/70 dark:bg-slate-900/40 text-xs font-semibold text-slate-400 dark:text-dark-muted uppercase tracking-wider">
+        <div className="overflow-x-auto ops-panel">
+          <table className="min-w-full divide-y divide-[var(--color-border)] text-left text-sm">
+            <thead className="text-xs font-semibold uppercase tracking-wider" style={{ background: 'rgba(35,43,55,0.4)', color: 'var(--color-text-muted)' }}>
               <tr>
                 <th className="px-6 py-4">Vehicle Details</th>
                 <th className="px-6 py-4">Max Capacity</th>
@@ -407,30 +407,30 @@ export default function VehiclesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
               {filteredVehicles.map((v) => (
-                <tr key={v.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors">
+                <tr key={v.id} className="transition-colors hover:bg-[var(--color-surface-raised)]">
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-brand-50 p-2 text-brand-600 dark:bg-brand-950/20 dark:text-brand-400">
+                      <div className="rounded-lg p-2" style={{ background: 'rgba(255,176,32,0.12)', color: 'var(--color-signal-amber)' }}>
                         <Truck size={18} />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-800 dark:text-white">{v.name}</p>
-                        <p className="text-xs text-slate-400 dark:text-dark-muted flex items-center">
-                          <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-2xs mr-2">{v.registrationNumber}</span>
+                        <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{v.name}</p>
+                        <p className="text-xs flex items-center" style={{ color: 'var(--color-text-muted)' }}>
+                          <span className="telemetry bg-[var(--color-surface-raised)] px-1 py-0.5 rounded text-2xs mr-2" style={{ color: 'var(--color-text-muted)' }}>{v.registrationNumber}</span>
                           {v.type} • {v.region || 'No Region'}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-300">
+                  <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-text-muted)' }}>
                     {v.maxLoadCapacityKg.toLocaleString()} kg
                   </td>
-                  <td className="px-6 py-4 font-mono text-slate-500 dark:text-dark-muted">
+                  <td className="px-6 py-4 telemetry" style={{ color: 'var(--color-text-muted)' }}>
                     {v.odometer.toLocaleString()} km
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">${v.acquisitionCost.toLocaleString()}</p>
-                    <p className="text-2xs text-brand-600 dark:text-brand-400 font-medium">Ops: ${v.totalOperationalCost.toLocaleString()}</p>
+                    <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>${v.acquisitionCost.toLocaleString()}</p>
+                    <p className="text-2xs font-medium" style={{ color: 'var(--color-signal-amber)' }}>Ops: ${v.totalOperationalCost.toLocaleString()}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClass(v.status)}`}>
@@ -440,7 +440,8 @@ export default function VehiclesPage() {
                   <td className="px-6 py-4 text-center">
                     <button
                       onClick={() => openDocumentsModal(v)}
-                      className="inline-flex items-center space-x-1 text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+                      className="inline-flex items-center space-x-1 text-xs font-semibold hover:opacity-80"
+                      style={{ color: 'var(--color-signal-amber)' }}
                     >
                       <FileText size={14} />
                       <span>Documents</span>
@@ -456,26 +457,26 @@ export default function VehiclesPage() {
       {/* Documents Modal */}
       {selectedVehicle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border mb-4">
+          <div className="w-full max-w-lg ops-panel p-6 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white">Documents: {selectedVehicle.name}</h3>
-                <p className="text-2xs text-slate-400 dark:text-dark-muted font-mono">{selectedVehicle.registrationNumber}</p>
+                <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Documents: {selectedVehicle.name}</h3>
+                <p className="text-2xs text-[var(--color-text-muted)] dark:text-dark-muted font-mono">{selectedVehicle.registrationNumber}</p>
               </div>
-              <button onClick={() => setSelectedVehicle(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSelectedVehicle(null)} className="hover:opacity-70" style={{ color: 'var(--color-text-muted)' }}>
                 <X size={18} />
               </button>
             </div>
 
             {/* Existing Documents List */}
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Documents</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-muted)' }}>Registered Documents</h4>
               {docLoading ? (
                 <div className="flex justify-center py-4">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-r-transparent" />
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
                 </div>
               ) : documents.length === 0 ? (
-                <div className="rounded-lg bg-slate-50 p-4 text-center dark:bg-slate-900/20 text-xs text-slate-400">
+                <div className="rounded-lg p-4 text-center text-xs" style={{ background: 'var(--color-surface-raised)', color: 'var(--color-text-muted)' }}>
                   No document records registered for this vehicle.
                 </div>
               ) : (
@@ -483,12 +484,12 @@ export default function VehiclesPage() {
                   {documents.map((doc) => {
                     const isExpired = new Date(doc.expiryDate) < new Date();
                     return (
-                      <div key={doc.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/30 p-3 rounded-lg border border-slate-100 dark:border-dark-border">
+                      <div key={doc.id} className="flex justify-between items-center p-3 rounded-lg border" style={{ background: 'var(--color-surface-raised)', borderColor: 'var(--color-border)' }}>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{doc.title}</p>
-                          <p className="text-2xs text-slate-400 dark:text-dark-muted capitalize">{doc.docType}</p>
+                          <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{doc.title}</p>
+                          <p className="text-2xs capitalize" style={{ color: 'var(--color-text-muted)' }}>{doc.docType}</p>
                         </div>
-                        <span className={`text-2xs font-bold px-2 py-0.5 rounded ${isExpired ? 'bg-red-50 text-red-600 dark:bg-red-950/20' : 'bg-brand-50 text-brand-600 dark:bg-brand-950/20'}`}>
+                        <span className={`text-2xs font-bold px-2 py-0.5 rounded ${isExpired ? 'status-badge--red' : 'status-badge--amber'}`}>
                           Exp: {new Date(doc.expiryDate).toLocaleDateString()}
                         </span>
                       </div>
@@ -500,11 +501,11 @@ export default function VehiclesPage() {
 
             {/* Upload Document Form */}
             {isFleetManager && (
-              <div className="border-t border-slate-100 pt-4 dark:border-dark-border">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Add Document Record</h4>
+              <div className="border-t border-[var(--color-border)] pt-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-muted)' }}>Add Document Record</h4>
                 
                 {docFormError && (
-                  <div className="mb-3 rounded bg-red-50 p-2 text-2xs font-semibold text-red-500">
+                  <div className="mb-3 rounded p-2 text-2xs font-semibold" style={{ background: 'rgba(255,92,92,0.1)', color: 'var(--color-signal-red)' }}>
                     {docFormError}
                   </div>
                 )}
@@ -512,22 +513,22 @@ export default function VehiclesPage() {
                 <form onSubmit={handleAddDocument} className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-3xs font-bold text-slate-400 uppercase">Document Title</label>
+                      <label className="block text-3xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Document Title</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Q3 Cargo Permit"
                         value={docTitle}
                         onChange={(e) => setDocTitle(e.target.value)}
-                        className="w-full mt-1 rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-brand-500 dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                        className="w-full mt-1 rounded-md border px-2 py-1.5 text-xs focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                       />
                     </div>
                     <div>
-                      <label className="block text-3xs font-bold text-slate-400 uppercase">Document Type</label>
+                      <label className="block text-3xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Document Type</label>
                       <select
                         value={docType}
                         onChange={(e) => setDocType(e.target.value)}
-                        className="w-full mt-1 rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-brand-500 dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                        className="w-full mt-1 rounded-md border px-2 py-1.5 text-xs focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                       >
                         <option value="Insurance">Insurance</option>
                         <option value="Permit">Cargo Permit</option>
@@ -538,19 +539,19 @@ export default function VehiclesPage() {
                   </div>
 
                   <div>
-                    <label className="block text-3xs font-bold text-slate-400 uppercase">Expiry Date</label>
+                    <label className="block text-3xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Expiry Date</label>
                     <input
                       type="date"
                       required
                       value={docExpiry}
                       onChange={(e) => setDocExpiry(e.target.value)}
-                      className="w-full mt-1 rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-brand-500 dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                      className="w-full mt-1 rounded-md border px-2 py-1.5 text-xs focus:outline-none" style={{ background: 'var(--color-base)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="flex w-full items-center justify-center space-x-1.5 rounded-lg bg-brand-600 py-2 text-xs font-semibold text-white hover:bg-brand-700"
+                    className="btn-primary w-full justify-center py-2 text-xs"
                   >
                     <FilePlus size={14} />
                     <span>Upload Document Details</span>
