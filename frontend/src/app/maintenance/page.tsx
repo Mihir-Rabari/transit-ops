@@ -178,7 +178,7 @@ export default function MaintenancePage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Service Cost Estimate ($)</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Service Cost Estimate (₹)</label>
               <input
                 type="number"
                 min="0"
@@ -253,7 +253,7 @@ export default function MaintenancePage() {
                 <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 dark:border-dark-border text-2xs font-medium text-[var(--color-text-muted)]">
                   <div>
                     <span className="block uppercase font-bold tracking-wider">Service Cost</span>
-                    <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>${log.cost.toLocaleString()}</span>
+                    <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>₹{log.cost.toLocaleString()}</span>
                   </div>
                   <div>
                     <span className="block uppercase font-bold tracking-wider">Date Opened</span>

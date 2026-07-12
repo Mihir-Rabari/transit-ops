@@ -158,7 +158,7 @@ export default function FinanceDashboard() {
             <div className="kpi-tile">
               <p className="kpi-tile__label">Net Profit (YTD)</p>
               <h3 className="kpi-tile__value telemetry mt-1" style={{ color: totalProfit >= 0 ? 'var(--color-signal-green)' : 'var(--color-signal-red)' }}>
-                ${totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
               <div className="mt-2 flex items-center text-xs font-semibold" style={{ color: 'var(--color-signal-green)' }}>
                 <TrendingUp size={14} className="mr-1" />
@@ -170,7 +170,7 @@ export default function FinanceDashboard() {
             <div className="kpi-tile">
               <p className="kpi-tile__label">Operational Cost</p>
               <h3 className="kpi-tile__value telemetry mt-1" style={{ color: 'var(--color-text-primary)' }}>
-                ${totalOps.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{totalOps.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
               <div className="mt-2 flex items-center text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 <span>Total spent running fleet</span>
@@ -181,7 +181,7 @@ export default function FinanceDashboard() {
             <div className="kpi-tile">
               <p className="kpi-tile__label">Total Fuel spend</p>
               <h3 className="kpi-tile__value telemetry mt-1" style={{ color: 'var(--color-text-primary)' }}>
-                ${totalFuel.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{totalFuel.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
               <div className="mt-2 flex items-center text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 <span>Calculated via fuel logs</span>
@@ -192,7 +192,7 @@ export default function FinanceDashboard() {
             <div className="kpi-tile">
               <p className="kpi-tile__label">Maintenance spend</p>
               <h3 className="kpi-tile__value telemetry mt-1" style={{ color: 'var(--color-text-primary)' }}>
-                ${totalMaintenance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{totalMaintenance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
               <div className="mt-2 flex items-center text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 <span>Calculated via workshop logs</span>
@@ -216,8 +216,8 @@ export default function FinanceDashboard() {
                     <XAxis dataKey="registrationNumber" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
-                    <Bar dataKey="estimatedRevenue" name="Revenue ($)" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="totalOperationalCost" name="Operational Cost ($)" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="estimatedRevenue" name="Revenue (₹)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="totalOperationalCost" name="Operational Cost (₹)" fill="#ef4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -262,7 +262,7 @@ export default function FinanceDashboard() {
                           <span style={{ color: 'var(--color-text-muted)' }}>{item.name}</span>
                         </div>
                         <span className="font-bold telemetry" style={{ color: 'var(--color-text-primary)' }}>
-                          ${item.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          ₹{item.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </span>
                       </div>
                     ))}

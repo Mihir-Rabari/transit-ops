@@ -203,24 +203,23 @@ export default function FuelExpensesPage() {
         )}
       </div>
 
-      {/* Overview Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div className="ops-panel p-4">
           <p className="text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Total Fleet Expenses</p>
           <p className="text-2xl font-extrabold mt-1" style={{ color: 'var(--color-text-primary)' }}>
-            ${totalFleetSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{totalFleetSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
         <div className="ops-panel p-4">
           <p className="text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Total Fuel Costs</p>
           <p className="text-2xl font-extrabold mt-1" style={{ color: 'var(--color-text-primary)' }}>
-            ${totalFuelSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{totalFuelSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
         <div className="ops-panel p-4">
           <p className="text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>Other Combined Expenses</p>
           <p className="text-2xl font-extrabold mt-1" style={{ color: 'var(--color-text-primary)' }}>
-            ${totalOtherSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{totalOtherSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
       </div>
@@ -276,7 +275,7 @@ export default function FuelExpensesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Total Cost ($) *</label>
+                  <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Total Cost (₹) *</label>
                   <input
                     type="number"
                     required
@@ -361,7 +360,7 @@ export default function FuelExpensesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Total Amount ($) *</label>
+                  <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Total Amount (₹) *</label>
                   <input
                     type="number"
                     required
@@ -456,16 +455,16 @@ export default function FuelExpensesPage() {
                     {v.odometer.toLocaleString()} km
                   </td>
                   <td className="px-6 py-4 text-right text-[var(--color-text-muted)] font-medium">
-                    ${v.fuelCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{v.fuelCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                   <td className="px-6 py-4 text-right text-[var(--color-text-muted)] font-medium">
-                    ${v.maintenanceCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{v.maintenanceCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                   <td className="px-6 py-4 text-right text-[var(--color-text-muted)] font-medium">
-                    ${v.expenseCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{v.expenseCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                   <td className="px-6 py-4 text-right bg-[var(--color-surface-raised)] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                    ${v.totalOperationalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{v.totalOperationalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}
@@ -502,7 +501,7 @@ export default function FuelExpensesPage() {
                     {log.liters.toLocaleString()} L
                   </td>
                   <td className="px-6 py-4 text-right font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                    ${log.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{log.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}
@@ -539,7 +538,7 @@ export default function FuelExpensesPage() {
                     <span className="inline-flex rounded px-2 py-0.5 text-2xs font-semibold" style={{ background: 'var(--color-surface-raised)', color: 'var(--color-text-muted)' }}>{exp.type}</span>
                   </td>
                   <td className="px-6 py-4 text-right font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                    ${exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ₹{exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}

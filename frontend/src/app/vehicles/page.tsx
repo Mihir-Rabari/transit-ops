@@ -299,7 +299,7 @@ export default function VehiclesPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Acquisition Cost ($) *</label>
+              <label className="block text-xs font-bold uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Acquisition Cost (₹) *</label>
               <input
                 type="number"
                 required
@@ -429,8 +429,8 @@ export default function VehiclesPage() {
                     {v.odometer.toLocaleString()} km
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>${v.acquisitionCost.toLocaleString()}</p>
-                    <p className="text-2xs font-medium" style={{ color: 'var(--color-signal-amber)' }}>Ops: ${v.totalOperationalCost.toLocaleString()}</p>
+                    <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>₹{v.acquisitionCost.toLocaleString()}</p>
+                    <p className="text-2xs font-medium" style={{ color: 'var(--color-signal-amber)' }}>Ops: ₹{v.totalOperationalCost.toLocaleString()}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClass(v.status)}`}>
