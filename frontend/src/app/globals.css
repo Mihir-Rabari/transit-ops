@@ -10,16 +10,16 @@
    Declare as vars here for use in raw CSS.
 ───────────────────────────────────────────── */
 :root {
-  --color-base:            #0B0F19; /* Rich dark blue-black */
-  --color-surface:         #111827; /* Dark slate */
-  --color-surface-raised:  #1F2937; /* Lighter slate */
-  --color-text-primary:    #F9FAFB; /* Off-white */
-  --color-text-muted:      #9CA3AF; /* Cool gray */
-  --color-signal-amber:    #F59E0B; /* Warm amber */
-  --color-signal-green:    #10B981; /* Emerald green */
-  --color-signal-red:      #EF4444; /* Vivid red */
-  --color-signal-slate:    #4B5563; /* Medium gray */
-  --color-border:          #1F2937; /* Clean borders */
+  --color-base:            #121212; /* Rich dark charcoal black */
+  --color-surface:         #1C1C1E; /* Dark charcoal */
+  --color-surface-raised:  #2C2C2E; /* Lighter charcoal */
+  --color-text-primary:    #F2F2F7; /* Off-white */
+  --color-text-muted:      #8E8E93; /* Cool grey */
+  --color-signal-amber:    #FF9500; /* Warm orange-amber */
+  --color-signal-green:    #34C759; /* Bright green */
+  --color-signal-red:      #FF3B30; /* Bright red */
+  --color-signal-slate:    #636366; /* Charcoal slate */
+  --color-border:          #2C2C2E; /* Matching borders */
 }
 
 html.light, body.light, .light {
