@@ -45,9 +45,9 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     document.body.classList.toggle('dark', nextTheme === 'dark');
   };
 
-  // Protect all pages except login
+  // Protect all pages except login and landing page
   useEffect(() => {
-    if (!loading && !user && pathname !== '/login') {
+    if (!loading && !user && pathname !== '/login' && pathname !== '/') {
       router.push('/login');
     }
   }, [user, loading, pathname, router]);
@@ -60,9 +60,9 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If login page, render full screen without layout elements
-  if (pathname === '/login' || !user) {
-    return <div className="min-h-screen bg-slate-50 dark:bg-dark-bg transition-colors duration-200">{children}</div>;
+  // If login page or landing page, render full screen without layout elements
+  if (pathname === '/login' || pathname === '/' || !user) {
+    return <div className="min-h-screen transition-colors duration-200">{children}</div>;
   }
 
   const menuItems = [
