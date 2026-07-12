@@ -22,6 +22,19 @@
   --color-border:          #2A3340;
 }
 
+html.light, body.light, .light {
+  --color-base:            #F8FAFC;
+  --color-surface:         #FFFFFF;
+  --color-surface-raised:  #F1F5F9;
+  --color-text-primary:    #0F172A;
+  --color-text-muted:      #64748B;
+  --color-signal-amber:    #D97706;
+  --color-signal-green:    #16A34A;
+  --color-signal-red:      #DC2626;
+  --color-signal-slate:    #94A3B8;
+  --color-border:          #E2E8F0;
+}
+
 /* ─────────────────────────────────────────────
    BASE RESET
 ───────────────────────────────────────────── */

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { 
   LayoutDashboard, 
   Truck, 
@@ -14,7 +15,9 @@ import {
   LogOut,
   Menu,
   X,
-  UserCog
+  UserCog,
+  Sun,
+  Moon
 } from 'lucide-react';
 import './globals.css';
 
@@ -24,11 +27,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Force dark-class on body at all times — this app is always dark
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-    document.body.style.background = 'var(--color-base)';
-  }, []);
+  const { theme, toggleTheme } = useTheme();
 
   // Protect all pages except login and landing page
   useEffect(() => {
@@ -186,10 +185,19 @@ function MainLayout({ children }: { children: React.ReactNode }) {
             </h1>
           </div>
 
-          {/* Right: role badge */}
-          <span className="status-badge status-badge--amber hidden sm:inline-flex">
-            {user.role.replace(/_/g, ' ')}
-          </span>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={toggleTheme} 
+              className="p-1.5 rounded-md hover:bg-[var(--color-surface-raised)] transition-colors focus:outline-none"
+              style={{ color: 'var(--color-text-muted)' }}
+              title="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <span className="status-badge status-badge--amber hidden sm:inline-flex font-mono">
+              {user.role.replace(/_/g, ' ')}
+            </span>
+          </div>
         </header>
 
         {/* Page content */}
@@ -203,7 +211,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full dark">
+    <html lang="en" className="h-full">
       <head>
         <title>TransitOps — Fleet Operations Console</title>
         <meta name="description" content="TransitOps: real-time fleet dispatch, compliance enforcement, and financial intelligence for logistics operations." />
@@ -211,9 +219,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚛</text></svg>" />
       </head>
       <body className="h-full">
-        <AuthProvider>
-          <MainLayout>{children}</MainLayout>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <MainLayout>{children}</MainLayout>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,9 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Truck } from 'lucide-react';
+import { Truck, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function LandingPage() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div style={{ background: 'var(--color-base)', minHeight: '100vh', color: 'var(--color-text-primary)' }}>
       
@@ -22,6 +25,14 @@ export default function LandingPage() {
             </span>
           </div>
           <div className="flex items-center gap-4">
+            <button 
+              onClick={toggleTheme} 
+              className="p-1.5 rounded-md hover:bg-[var(--color-surface-raised)] transition-colors focus:outline-none"
+              style={{ color: 'var(--color-text-muted)' }}
+              title="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <Link href="/login"
                   style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}
                   className="btn-ghost text-sm hidden sm:flex">
