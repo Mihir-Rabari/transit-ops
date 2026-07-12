@@ -14,9 +14,9 @@ const router = Router();
 router.use(authenticateJWT);
 
 router.get('/fuel-logs', getAllFuelLogs);
-router.post('/fuel-logs', requireRole([Role.FLEET_MANAGER, Role.DRIVER]), createFuelLog);
+router.post('/fuel-logs', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.DRIVER]), createFuelLog);
 
 router.get('/expenses', getAllExpenses);
-router.post('/expenses', requireRole([Role.FLEET_MANAGER, Role.DRIVER]), createExpense);
+router.post('/expenses', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.DRIVER]), createExpense);
 
 export default router;

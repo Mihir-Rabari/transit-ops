@@ -167,7 +167,7 @@ export default function FuelExpensesPage() {
   };
 
   // Check roles
-  const canLogExpenses = user?.role === 'FLEET_MANAGER' || user?.role === 'DRIVER';
+  const canLogExpenses = user?.role === 'FLEET_MANAGER' || user?.role === 'DRIVER' || user?.role === 'ADMIN';
 
   // Calculate totals
   const totalFleetSpent = vehicles.reduce((sum, v) => sum + v.totalOperationalCost, 0);

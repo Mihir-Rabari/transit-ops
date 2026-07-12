@@ -13,7 +13,7 @@ const router = Router();
 router.use(authenticateJWT);
 
 router.get('/', getAllMaintenanceLogs);
-router.post('/', requireRole([Role.FLEET_MANAGER, Role.SAFETY_OFFICER]), createMaintenanceLog);
-router.patch('/:id/close', requireRole([Role.FLEET_MANAGER, Role.SAFETY_OFFICER]), closeMaintenanceLog);
+router.post('/', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.SAFETY_OFFICER]), createMaintenanceLog);
+router.patch('/:id/close', requireRole([Role.ADMIN, Role.FLEET_MANAGER, Role.SAFETY_OFFICER]), closeMaintenanceLog);
 
 export default router;

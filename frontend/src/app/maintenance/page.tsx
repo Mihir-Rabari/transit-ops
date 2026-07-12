@@ -121,7 +121,7 @@ export default function MaintenancePage() {
     }
   };
 
-  const isEligibleRole = user?.role === 'FLEET_MANAGER' || user?.role === 'SAFETY_OFFICER';
+  const isEligibleRole = user?.role === 'FLEET_MANAGER' || user?.role === 'SAFETY_OFFICER' || user?.role === 'ADMIN';
 
   return (
     <div className="space-y-6">
