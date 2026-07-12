@@ -194,9 +194,6 @@ function MainLayout({ children }: { children: React.ReactNode }) {
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <span className="status-badge status-badge--amber hidden sm:inline-flex font-mono">
-              {user.role.replace(/_/g, ' ')}
-            </span>
           </div>
         </header>
 

@@ -10,29 +10,29 @@
    Declare as vars here for use in raw CSS.
 ───────────────────────────────────────────── */
 :root {
-  --color-base:            #12161D;
-  --color-surface:         #1B222C;
-  --color-surface-raised:  #232B37;
-  --color-text-primary:    #EDF1F6;
-  --color-text-muted:      #8993A4;
-  --color-signal-amber:    #FFB020;
-  --color-signal-green:    #3ECF8E;
-  --color-signal-red:      #FF5C5C;
-  --color-signal-slate:    #4A5568;
-  --color-border:          #2A3340;
+  --color-base:            #0B0F19; /* Rich dark blue-black */
+  --color-surface:         #111827; /* Dark slate */
+  --color-surface-raised:  #1F2937; /* Lighter slate */
+  --color-text-primary:    #F9FAFB; /* Off-white */
+  --color-text-muted:      #9CA3AF; /* Cool gray */
+  --color-signal-amber:    #F59E0B; /* Warm amber */
+  --color-signal-green:    #10B981; /* Emerald green */
+  --color-signal-red:      #EF4444; /* Vivid red */
+  --color-signal-slate:    #4B5563; /* Medium gray */
+  --color-border:          #1F2937; /* Clean borders */
 }
 
 html.light, body.light, .light {
-  --color-base:            #F8FAFC;
-  --color-surface:         #FFFFFF;
-  --color-surface-raised:  #F1F5F9;
-  --color-text-primary:    #0F172A;
-  --color-text-muted:      #64748B;
-  --color-signal-amber:    #D97706;
-  --color-signal-green:    #16A34A;
-  --color-signal-red:      #DC2626;
-  --color-signal-slate:    #94A3B8;
-  --color-border:          #E2E8F0;
+  --color-base:            #F8FAFC; /* Slate 50 */
+  --color-surface:         #FFFFFF; /* Pure white */
+  --color-surface-raised:  #F1F5F9; /* Slate 100 */
+  --color-text-primary:    #0F172A; /* Slate 900 */
+  --color-text-muted:      #64748B; /* Slate 500 */
+  --color-signal-amber:    #D97706; /* Amber 600 */
+  --color-signal-green:    #059669; /* Emerald 600 */
+  --color-signal-red:      #DC2626; /* Red 600 */
+  --color-signal-slate:    #94A3B8; /* Slate 400 */
+  --color-border:          #E2E8F0; /* Slate 200 */
 }
 
 /* ─────────────────────────────────────────────
