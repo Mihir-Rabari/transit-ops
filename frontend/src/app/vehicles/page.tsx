@@ -166,7 +166,7 @@ export default function VehiclesPage() {
     }
   };
 
-  const isFleetManager = user?.role === 'FLEET_MANAGER';
+  const isFleetManager = user?.role === 'FLEET_MANAGER' || user?.role === 'ADMIN';
 
   // Filters logic
   const filteredVehicles = vehicles
