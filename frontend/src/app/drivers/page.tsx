@@ -12,7 +12,9 @@ import {
   Calendar,
   Phone,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  FileText,
+  Upload
 } from 'lucide-react';
 
 interface Driver {
@@ -24,6 +26,15 @@ interface Driver {
   contactNumber: string;
   safetyScore: number;
   status: 'AVAILABLE' | 'ON_TRIP' | 'OFF_DUTY' | 'SUSPENDED';
+}
+
+interface DocumentRecord {
+  id: string;
+  title: string;
+  docType: string;
+  s3Url: string;
+  expiryDate: string | null;
+  createdAt: string;
 }
 
 export default function DriversPage() {
@@ -46,6 +57,17 @@ export default function DriversPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortBy, setSortBy] = useState('name');
+
+  // Driver Documents Modal State
+  const [selectedDriverForDocs, setSelectedDriverForDocs] = useState<Driver | null>(null);
+  const [driverDocs, setDriverDocs] = useState<DocumentRecord[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docTitle, setDocTitle] = useState('');
+  const [docType, setDocType] = useState('License');
+  const [docExpiry, setDocExpiry] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docUploadError, setDocUploadError] = useState<string | null>(null);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   const fetchDrivers = useCallback(async () => {
     setLoading(true);
@@ -100,51 +122,103 @@ export default function DriversPage() {
     }
   };
 
-  const isFleetManager = user?.role === 'FLEET_MANAGER';
+  // Documents loading & uploading
+  const openDocsModal = async (driver: Driver) => {
+    setSelectedDriverForDocs(driver);
+    setDocsLoading(true);
+    setDocUploadError(null);
+    try {
+      const docs = await apiRequest(`/drivers/${driver.id}/documents`);
+      setDriverDocs(docs);
+    } catch (err: any) {
+      console.error('Failed to load driver documents:', err);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
 
-  // Expiry calculation helper: check if license expires in < 30 days
+  const handleDocUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDocUploadError(null);
+
+    if (!selectedDriverForDocs || !docTitle || !docFile) {
+      setDocUploadError('Title and File are required');
+      return;
+    }
+
+    setUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', docTitle);
+      formData.append('docType', docType);
+      if (docExpiry) formData.append('expiryDate', docExpiry);
+      formData.append('file', docFile);
+
+      await apiRequest(`/drivers/${selectedDriverForDocs.id}/documents`, {
+        method: 'POST',
+        body: formData
+      });
+
+      // Clear upload form and reload documents
+      setDocTitle('');
+      setDocExpiry('');
+      setDocFile(null);
+      
+      const docs = await apiRequest(`/drivers/${selectedDriverForDocs.id}/documents`);
+      setDriverDocs(docs);
+    } catch (err: any) {
+      setDocUploadError(err.message || 'Failed to upload document');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE':
+        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-200/50';
+      case 'ON_TRIP':
+        return 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400 border-blue-200/50';
+      case 'OFF_DUTY':
+        return 'bg-slate-100 text-slate-700 dark:bg-slate-800/40 dark:text-slate-300 border-slate-200/50';
+      case 'SUSPENDED':
+        return 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border-red-200/50';
+      default:
+        return 'bg-slate-50 text-slate-700 border-slate-200';
+    }
+  };
+
   const getLicenseExpiryInfo = (expiryDateStr: string) => {
-    const today = new Date();
     const expiryDate = new Date(expiryDateStr);
+    const today = new Date();
     const diffTime = expiryDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return { expired: true, warning: true, text: 'Expired', class: 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border-red-200/50' };
+      return { text: 'Expired', class: 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border-red-200/50' };
+    } else if (diffDays <= 30) {
+      return { text: `Expiring soon (${diffDays}d)`, class: 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border-amber-200/50' };
+    } else {
+      return { text: 'Valid', class: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-200/50' };
     }
-    if (diffDays <= 30) {
-      return { expired: false, warning: true, text: `${diffDays} days left`, class: 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border-amber-200/50 animate-pulse' };
-    }
-    return { expired: false, warning: false, text: 'Valid', class: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-200/50' };
   };
 
-  // Filter & Sort logic
+  // Filter and Sort
   const filteredDrivers = drivers
-    .filter(d => {
-      const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase()) ||
+    .filter((d) => {
+      const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase()) || 
                             d.licenseNumber.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter ? d.status === statusFilter : true;
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      if (sortBy === 'score') return b.safetyScore - a.safetyScore;
+      if (sortBy === 'score') {
+        return b.safetyScore - a.safetyScore;
+      }
       return a.name.localeCompare(b.name);
     });
 
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'AVAILABLE':
-        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-200/40';
-      case 'ON_TRIP':
-        return 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400 border-blue-200/40';
-      case 'OFF_DUTY':
-        return 'bg-slate-100 text-slate-600 dark:bg-slate-800/40 dark:text-slate-400 border-slate-200/40';
-      case 'SUSPENDED':
-        return 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border-red-200/40';
-      default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
-    }
-  };
+  const isFleetManager = user?.role === 'FLEET_MANAGER' || user?.role === 'ADMIN';
 
   return (
     <div className="space-y-6">
@@ -153,7 +227,7 @@ export default function DriversPage() {
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Driver Registry</h2>
-          <p className="text-sm text-slate-400 dark:text-dark-muted">Manage active drivers, track driver compliance, licenses, and safety metrics.</p>
+          <p className="text-sm text-slate-400 dark:text-dark-muted">Verify eligibility and manage professional document scans.</p>
         </div>
         {isFleetManager && (
           <button
@@ -161,16 +235,16 @@ export default function DriversPage() {
             className="flex items-center space-x-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 shadow-md transition-all self-start sm:self-auto"
           >
             <Plus size={16} />
-            <span>Add Driver</span>
+            <span>Add Driver Profile</span>
           </button>
         )}
       </div>
 
-      {/* Add Form Panel */}
+      {/* Add Driver Form Panel */}
       {showAddForm && isFleetManager && (
         <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-dark-border dark:bg-dark-card shadow-md animate-fadeIn">
           <div className="mb-4 flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
-            <h3 className="font-bold text-slate-800 dark:text-white">Register New Driver Profile</h3>
+            <h3 className="font-bold text-slate-800 dark:text-white">Add Driver Profile</h3>
             <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600">
               <X size={18} />
             </button>
@@ -184,11 +258,11 @@ export default function DriversPage() {
 
           <form onSubmit={handleAddDriver} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Driver Name *</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Alex Mercer"
+                placeholder="e.g. Marcus Miller"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
@@ -200,7 +274,7 @@ export default function DriversPage() {
               <input
                 type="text"
                 required
-                placeholder="e.g. DL-9838183-A"
+                placeholder="e.g. DL-12048912"
                 value={licenseNum}
                 onChange={(e) => setLicenseNum(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
@@ -208,7 +282,7 @@ export default function DriversPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">License Category *</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">License Category/Class *</label>
               <input
                 type="text"
                 required
@@ -235,7 +309,7 @@ export default function DriversPage() {
               <input
                 type="text"
                 required
-                placeholder="e.g. +1 555 982 1283"
+                placeholder="e.g. +1 555-0199"
                 value={contactNum}
                 onChange={(e) => setContactNum(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
@@ -243,11 +317,12 @@ export default function DriversPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Initial Safety Score (0-100)</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Initial Safety Compliance Score (0-100)</label>
               <input
                 type="number"
                 min="0"
                 max="100"
+                placeholder="100"
                 value={safetyScore}
                 onChange={(e) => setSafetyScore(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
@@ -259,7 +334,7 @@ export default function DriversPage() {
                 type="submit"
                 className="w-full sm:w-auto rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
               >
-                Add Driver Profile
+                Create Profile
               </button>
             </div>
           </form>
@@ -274,14 +349,14 @@ export default function DriversPage() {
           </span>
           <input
             type="text"
-            placeholder="Search drivers by name or license number..."
+            placeholder="Search by driver name or license number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
           />
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-slate-400 uppercase">Status:</span>
             <select
@@ -333,6 +408,7 @@ export default function DriversPage() {
                 <th className="px-6 py-4">Contact Info</th>
                 <th className="px-6 py-4">Safety Score</th>
                 <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
@@ -366,9 +442,11 @@ export default function DriversPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 dark:text-dark-muted font-medium flex items-center mt-3">
-                      <Phone size={12} className="mr-1.5 text-slate-400" />
-                      {d.contactNumber}
+                    <td className="px-6 py-4 text-slate-500 dark:text-dark-muted font-medium">
+                      <div className="flex items-center">
+                        <Phone size={12} className="mr-1.5 text-slate-400" />
+                        {d.contactNumber}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-1.5">
@@ -383,11 +461,149 @@ export default function DriversPage() {
                         {d.status.replace('_', ' ')}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => openDocsModal(d)}
+                        className="text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                        title="Upload/View Driver Credentials Documents"
+                      >
+                        <FileText size={16} />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Driver Documents Modal */}
+      {selectedDriverForDocs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border mb-4">
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-white">Driver Credentials & Documents</h3>
+                <p className="text-xs text-slate-400 dark:text-dark-muted">
+                  Audit scan records for: {selectedDriverForDocs.name}
+                </p>
+              </div>
+              <button onClick={() => setSelectedDriverForDocs(null)} className="text-slate-400 hover:text-slate-600">
+                <X size={18} />
+              </button>
+            </div>
+
+            {docUploadError && (
+              <div className="mb-4 rounded bg-red-50 p-2.5 text-xs font-semibold text-red-500">
+                {docUploadError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Document upload form */}
+              <div className="border-r border-slate-100 dark:border-dark-border pr-0 md:pr-6 space-y-3">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Attach Scan</h4>
+                
+                <form onSubmit={handleDocUpload} className="space-y-3">
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. License scan, Medical cert"
+                      value={docTitle}
+                      onChange={(e) => setDocTitle(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Document Type *</label>
+                    <select
+                      value={docType}
+                      onChange={(e) => setDocType(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    >
+                      <option value="License">Driving License Scan</option>
+                      <option value="Medical">Medical Check Certificate</option>
+                      <option value="Certification">Training Certification</option>
+                      <option value="Other">Other Document</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Expiry Date (optional)</label>
+                    <input
+                      type="date"
+                      value={docExpiry}
+                      onChange={(e) => setDocExpiry(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Select File *</label>
+                    <input
+                      type="file"
+                      required
+                      onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+                      className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-3xs file:bg-slate-100 hover:file:bg-slate-200 dark:file:bg-slate-800"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={uploadingDoc}
+                    className="w-full flex items-center justify-center space-x-1 rounded bg-brand-600 py-2 text-xs font-semibold text-white hover:bg-brand-700"
+                  >
+                    <Upload size={12} />
+                    <span>{uploadingDoc ? 'Uploading...' : 'Upload File'}</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Documents list */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Uploaded Scans</h4>
+
+                {docsLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-r-transparent" />
+                  </div>
+                ) : driverDocs.length === 0 ? (
+                  <p className="text-xs text-slate-400 dark:text-dark-muted text-center py-12">No files uploaded yet.</p>
+                ) : (
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {driverDocs.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-900/10 border border-slate-100 dark:border-dark-border text-xs">
+                        <div className="min-w-0 pr-2">
+                          <p className="font-semibold text-slate-700 dark:text-slate-300 truncate" title={doc.title}>
+                            {doc.title}
+                          </p>
+                          <span className="inline-block text-4xs font-mono font-bold bg-slate-200/50 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-500">
+                            {doc.docType}
+                          </span>
+                        </div>
+                        <a
+                          href={doc.s3Url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-bold text-brand-600 hover:underline shrink-0"
+                        >
+                          Open
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+          </div>
         </div>
       )}
 

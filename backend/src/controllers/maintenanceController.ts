@@ -4,8 +4,13 @@ import { MaintenanceStatus, VehicleStatus } from '@prisma/client';
 import { invalidateDashboardCache } from '../utils/cache';
 
 export async function getAllMaintenanceLogs(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const logs = await prisma.maintenanceLog.findMany({
+      where: {
+        vehicle: { companyId: user.companyId }
+      },
       include: {
         vehicle: {
           select: { id: true, registrationNumber: true, name: true, status: true }
@@ -22,6 +27,7 @@ export async function getAllMaintenanceLogs(req: Request, res: Response) {
 
 export async function createMaintenanceLog(req: Request, res: Response) {
   const { vehicleId, description, cost } = req.body;
+  const user = (req as any).user;
 
   if (!vehicleId || !description) {
     return res.status(400).json({ error: 'Required fields: vehicleId, description' });
@@ -30,7 +36,9 @@ export async function createMaintenanceLog(req: Request, res: Response) {
   const logCost = cost !== undefined ? parseFloat(cost) : 0;
 
   try {
-    const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+    const vehicle = await prisma.vehicle.findFirst({
+      where: { id: vehicleId, companyId: user.companyId }
+    });
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -70,10 +78,14 @@ export async function createMaintenanceLog(req: Request, res: Response) {
 
 export async function closeMaintenanceLog(req: Request, res: Response) {
   const { id } = req.params;
+  const user = (req as any).user;
 
   try {
-    const log = await prisma.maintenanceLog.findUnique({
-      where: { id },
+    const log = await prisma.maintenanceLog.findFirst({
+      where: {
+        id,
+        vehicle: { companyId: user.companyId }
+      },
       include: { vehicle: true }
     });
 
@@ -96,7 +108,6 @@ export async function closeMaintenanceLog(req: Request, res: Response) {
         include: { vehicle: true }
       });
 
-      // Get latest vehicle status
       const latestVehicle = await tx.vehicle.findUnique({ where: { id: log.vehicleId } });
       
       if (latestVehicle && latestVehicle.status !== VehicleStatus.RETIRED) {

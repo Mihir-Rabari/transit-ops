@@ -7,12 +7,24 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Company {
+  id        String    @id @default(uuid())
+  name      String
+  users     User[]
+  vehicles  Vehicle[]
+  drivers   Driver[]
+  trips     Trip[]
+  createdAt DateTime  @default(now())
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
   passwordHash  String
   name          String
   role          Role     // ADMIN, FLEET_MANAGER, DRIVER, SAFETY_OFFICER, FINANCIAL_ANALYST
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   driver        Driver?
   createdAt     DateTime @default(now())
 }
@@ -35,6 +47,8 @@ model Vehicle {
   acquisitionCost   Float
   status            VehicleStatus @default(AVAILABLE)
   region            String?
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   trips             Trip[]
   maintenanceLogs   MaintenanceLog[]
   fuelLogs          FuelLog[]
@@ -59,9 +73,12 @@ model Driver {
   contactNumber     String
   safetyScore       Float    @default(100)
   status            DriverStatus @default(AVAILABLE)
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   trips             Trip[]
   userId            String?  @unique
   user              User?    @relation(fields: [userId], references: [id])
+  documents         DriverDocument[]
   createdAt         DateTime @default(now())
 }
 
@@ -88,6 +105,9 @@ model Trip {
   dispatchedAt    DateTime?
   completedAt     DateTime?
   cancelledAt     DateTime?
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documents       TripDocument[]
   createdAt       DateTime @default(now())
 }
 
@@ -139,5 +159,28 @@ model VehicleDocument {
   title       String
   docType     String   // e.g. Insurance, Registration, Permit
   expiryDate  DateTime
+  createdAt   DateTime @default(now())
+}
+
+model DriverDocument {
+  id          String   @id @default(uuid())
+  driverId    String
+  driver      Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  title       String
+  docType     String   // e.g. License, Medical, Cert
+  s3Key       String
+  s3Url       String
+  expiryDate  DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model TripDocument {
+  id          String   @id @default(uuid())
+  tripId      String
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  title       String
+  docType     String   // e.g. BOL, POD
+  s3Key       String
+  s3Url       String
   createdAt   DateTime @default(now())
 }

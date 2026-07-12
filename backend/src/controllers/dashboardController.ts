@@ -5,14 +5,15 @@ import { VehicleStatus, DriverStatus, TripStatus } from '@prisma/client';
 
 export async function getDashboardKPIs(req: Request, res: Response) {
   const { type, status, region } = req.query;
+  const user = (req as any).user;
 
-  // Build a unique Redis cache key based on the query parameters
+  // Build a unique Redis cache key scoped by companyId
   const cacheParams = [];
   if (type) cacheParams.push(`type=${type}`);
   if (status) cacheParams.push(`status=${status}`);
   if (region) cacheParams.push(`region=${region}`);
   
-  const cacheKey = `dashboard:kpis:${cacheParams.sort().join('&') || 'default'}`;
+  const cacheKey = `dashboard:kpis:${user.companyId}:${cacheParams.sort().join('&') || 'default'}`;
   const cacheTTL = 15; // 15 seconds
 
   try {
@@ -25,20 +26,20 @@ export async function getDashboardKPIs(req: Request, res: Response) {
       }
     }
 
-    // Build Prisma query filters
-    const vehicleWhere: any = {};
+    // Build Prisma query filters scoped to companyId
+    const vehicleWhere: any = { companyId: user.companyId };
     if (type) vehicleWhere.type = type as string;
     if (status) vehicleWhere.status = status as VehicleStatus;
     if (region) vehicleWhere.region = region as string;
 
-    const tripWhere: any = {};
+    const tripWhere: any = { companyId: user.companyId };
     if (type || region) {
       tripWhere.vehicle = {};
       if (type) tripWhere.vehicle.type = type as string;
       if (region) tripWhere.vehicle.region = region as string;
     }
 
-    const driverWhere: any = {};
+    const driverWhere: any = { companyId: user.companyId };
     if (region) {
       driverWhere.trips = {
         some: {

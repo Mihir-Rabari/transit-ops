@@ -3,8 +3,11 @@ import prisma from '../config/db';
 import { TripStatus } from '@prisma/client';
 
 export async function getFuelEfficiencyReport(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const vehicles = await prisma.vehicle.findMany({
+      where: { companyId: user.companyId },
       include: {
         trips: {
           where: {
@@ -45,8 +48,11 @@ export async function getFuelEfficiencyReport(req: Request, res: Response) {
 }
 
 export async function getUtilizationReport(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const vehicles = await prisma.vehicle.findMany({
+      where: { companyId: user.companyId },
       include: {
         trips: true
       }
@@ -83,8 +89,11 @@ export async function getUtilizationReport(req: Request, res: Response) {
 }
 
 export async function getROIReport(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const vehicles = await prisma.vehicle.findMany({
+      where: { companyId: user.companyId },
       include: {
         fuelLogs: { select: { cost: true } },
         maintenanceLogs: { select: { cost: true } },
@@ -137,8 +146,11 @@ export async function getROIReport(req: Request, res: Response) {
 }
 
 export async function exportCSVReport(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const vehicles = await prisma.vehicle.findMany({
+      where: { companyId: user.companyId },
       include: {
         fuelLogs: { select: { cost: true } },
         maintenanceLogs: { select: { cost: true } },

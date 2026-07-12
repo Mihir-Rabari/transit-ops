@@ -4,6 +4,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import routes from './routes';
 import { startLicenseExpiryCron } from './utils/cron';
 import redisClient from './config/redis';
@@ -37,6 +38,9 @@ app.get('/health', async (req, res) => {
     }
   });
 });
+
+// Static folder serving for S3 local fallback uploads
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Register all API routes at the root path
 app.use('/', routes);

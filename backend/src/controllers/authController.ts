@@ -4,40 +4,35 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/db';
 import redisClient from '../config/redis';
 import { Role } from '@prisma/client';
+import { sendWelcomeEmail, sendLoginAlertEmail } from '../utils/mailer';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'transitops_access_secret_token_99887766';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'transitops_refresh_secret_token_11223344';
 
 // JWT TTL configurations (seconds)
-const ACCESS_EXPIRY_SEC = 900; // 15 minutes
 const REFRESH_EXPIRY_SEC = 604800; // 7 days
 
-function generateAccessToken(user: { id: string; email: string; role: Role }) {
+function generateAccessToken(user: { id: string; email: string; role: Role; companyId: string }) {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, companyId: user.companyId },
     JWT_SECRET,
     { expiresIn: '15m' }
   );
 }
 
-function generateRefreshToken(user: { id: string; email: string; role: Role }) {
+function generateRefreshToken(user: { id: string; email: string; role: Role; companyId: string }) {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, companyId: user.companyId },
     JWT_REFRESH_SECRET,
     { expiresIn: '7d' }
   );
 }
 
 export async function register(req: Request, res: Response) {
-  const { email, password, name, role } = req.body;
+  const { email, password, name, companyName } = req.body;
 
-  if (!email || !password || !name || !role) {
-    return res.status(400).json({ error: 'All fields (email, password, name, role) are required' });
-  }
-
-  // Check if role is valid
-  if (!Object.values(Role).includes(role as Role)) {
-    return res.status(400).json({ error: `Invalid role. Must be one of: ${Object.values(Role).join(', ')}` });
+  if (!email || !password || !name || !companyName) {
+    return res.status(400).json({ error: 'All fields (email, password, name, companyName) are required' });
   }
 
   try {
@@ -47,22 +42,40 @@ export async function register(req: Request, res: Response) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase().trim(),
-        passwordHash,
-        name: name.trim(),
-        role: role as Role
-      }
+    
+    // Create Company and Admin user in transaction
+    const { company, user } = await prisma.$transaction(async (tx) => {
+      // 1. Create company
+      const createdCompany = await tx.company.create({
+        data: { name: companyName.trim() }
+      });
+
+      // 2. Create admin user
+      const createdUser = await tx.user.create({
+        data: {
+          email: email.toLowerCase().trim(),
+          passwordHash,
+          name: name.trim(),
+          role: Role.ADMIN,
+          companyId: createdCompany.id
+        }
+      });
+
+      return { company: createdCompany, user: createdUser };
     });
 
+    // Send welcome email (asynchronously)
+    sendWelcomeEmail(user.email, user.name, company.id).catch(console.error);
+
     return res.status(201).json({
-      message: 'User registered successfully',
+      message: 'Company and Administrator registered successfully',
+      tenantId: company.id,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        companyId: user.companyId
       }
     });
   } catch (err) {
@@ -72,16 +85,29 @@ export async function register(req: Request, res: Response) {
 }
 
 export async function login(req: Request, res: Response) {
-  const { email, password } = req.body;
+  const { tenantId, email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+  if (!tenantId || !email || !password) {
+    return res.status(400).json({ error: 'Tenant ID, email, and password are required' });
   }
 
   const lowercaseEmail = email.toLowerCase().trim();
 
   try {
-    const user = await prisma.user.findUnique({ where: { email: lowercaseEmail } });
+    // 1. Verify company exists
+    const company = await prisma.company.findUnique({ where: { id: tenantId } });
+    if (!company) {
+      return res.status(401).json({ error: 'Invalid Tenant ID' });
+    }
+
+    // 2. Find user in the company partition
+    const user = await prisma.user.findFirst({
+      where: {
+        email: lowercaseEmail,
+        companyId: tenantId
+      }
+    });
+
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -105,6 +131,9 @@ export async function login(req: Request, res: Response) {
       await redisClient.setEx(`refresh:${user.id}`, REFRESH_EXPIRY_SEC, refreshToken);
     }
 
+    // Send login alert (asynchronously)
+    sendLoginAlertEmail(user.email, user.name).catch(console.error);
+
     return res.json({
       accessToken,
       refreshToken,
@@ -112,7 +141,8 @@ export async function login(req: Request, res: Response) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        companyId: user.companyId
       }
     });
   } catch (err) {
@@ -129,7 +159,12 @@ export async function refresh(req: Request, res: Response) {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { id: string; email: string; role: Role };
+    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { 
+      id: string; 
+      email: string; 
+      role: Role; 
+      companyId: string 
+    };
 
     // Check Redis session store
     if (redisClient.isOpen) {
@@ -139,7 +174,7 @@ export async function refresh(req: Request, res: Response) {
       }
     }
 
-    // Retrieve fresh user info (in case role changes or user is deleted)
+    // Retrieve fresh user info
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user) {
       return res.status(401).json({ error: 'User no longer exists' });
@@ -160,7 +195,8 @@ export async function refresh(req: Request, res: Response) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        companyId: user.companyId
       }
     });
   } catch (err) {
@@ -170,7 +206,6 @@ export async function refresh(req: Request, res: Response) {
 }
 
 export async function logout(req: Request, res: Response) {
-  // authenticateJWT middleware injects req.user
   const user = (req as any).user;
 
   if (!user) {

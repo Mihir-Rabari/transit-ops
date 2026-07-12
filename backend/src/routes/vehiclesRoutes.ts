@@ -17,11 +17,11 @@ router.use(authenticateJWT);
 
 router.get('/', getAllVehicles);
 router.get('/available', getAvailableVehicles);
-router.post('/', requireRole([Role.FLEET_MANAGER]), registerVehicle);
-router.patch('/:id', requireRole([Role.FLEET_MANAGER]), updateVehicle);
+router.post('/', requireRole([Role.ADMIN, Role.FLEET_MANAGER]), registerVehicle);
+router.patch('/:id', requireRole([Role.ADMIN, Role.FLEET_MANAGER]), updateVehicle);
 
 // Document routes
 router.get('/:id/documents', getVehicleDocuments);
-router.post('/:id/documents', requireRole([Role.FLEET_MANAGER]), uploadVehicleDocument);
+router.post('/:id/documents', requireRole([Role.ADMIN, Role.FLEET_MANAGER]), uploadVehicleDocument);
 
 export default router;

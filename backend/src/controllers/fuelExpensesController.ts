@@ -4,8 +4,13 @@ import { invalidateDashboardCache } from '../utils/cache';
 
 // Fuel logs
 export async function getAllFuelLogs(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const logs = await prisma.fuelLog.findMany({
+      where: {
+        vehicle: { companyId: user.companyId }
+      },
       include: {
         vehicle: {
           select: { id: true, registrationNumber: true, name: true }
@@ -22,6 +27,7 @@ export async function getAllFuelLogs(req: Request, res: Response) {
 
 export async function createFuelLog(req: Request, res: Response) {
   const { vehicleId, liters, cost, date } = req.body;
+  const user = (req as any).user;
 
   if (!vehicleId || liters === undefined || cost === undefined) {
     return res.status(400).json({ error: 'Required fields: vehicleId, liters, cost' });
@@ -38,7 +44,9 @@ export async function createFuelLog(req: Request, res: Response) {
   }
 
   try {
-    const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+    const vehicle = await prisma.vehicle.findFirst({
+      where: { id: vehicleId, companyId: user.companyId }
+    });
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -64,8 +72,13 @@ export async function createFuelLog(req: Request, res: Response) {
 
 // Expenses
 export async function getAllExpenses(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const expenses = await prisma.expense.findMany({
+      where: {
+        vehicle: { companyId: user.companyId }
+      },
       include: {
         vehicle: {
           select: { id: true, registrationNumber: true, name: true }
@@ -82,6 +95,7 @@ export async function getAllExpenses(req: Request, res: Response) {
 
 export async function createExpense(req: Request, res: Response) {
   const { vehicleId, type, amount, date } = req.body;
+  const user = (req as any).user;
 
   if (!vehicleId || !type || amount === undefined) {
     return res.status(400).json({ error: 'Required fields: vehicleId, type, amount' });
@@ -93,7 +107,9 @@ export async function createExpense(req: Request, res: Response) {
   }
 
   try {
-    const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+    const vehicle = await prisma.vehicle.findFirst({
+      where: { id: vehicleId, companyId: user.companyId }
+    });
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }

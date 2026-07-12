@@ -2,17 +2,17 @@ import { Request, Response } from 'express';
 import prisma from '../config/db';
 import { TripStatus, VehicleStatus, DriverStatus, Role } from '@prisma/client';
 import { invalidateDashboardCache } from '../utils/cache';
+import { uploadFile } from '../utils/s3';
 
 export async function getAllTrips(req: Request, res: Response) {
   const user = (req as any).user;
-  const where: any = {};
+  const where: any = { companyId: user.companyId };
 
   try {
     if (user && user.role === Role.DRIVER) {
       // Find associated Driver profile
       const driver = await prisma.driver.findUnique({ where: { userId: user.id } });
       if (!driver) {
-        // If not linked to any profile, return empty list
         return res.json([]);
       }
       where.driverId = driver.id;
@@ -39,6 +39,7 @@ export async function getAllTrips(req: Request, res: Response) {
 
 export async function createTrip(req: Request, res: Response) {
   const { source, destination, vehicleId, driverId, cargoWeightKg, plannedDistanceKm } = req.body;
+  const user = (req as any).user;
 
   if (!source || !destination || !vehicleId || !driverId || cargoWeightKg === undefined || plannedDistanceKm === undefined) {
     return res.status(400).json({ error: 'Required fields: source, destination, vehicleId, driverId, cargoWeightKg, plannedDistanceKm' });
@@ -49,7 +50,9 @@ export async function createTrip(req: Request, res: Response) {
 
   try {
     // 1. Fetch Vehicle and check business rules
-    const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+    const vehicle = await prisma.vehicle.findFirst({ 
+      where: { id: vehicleId, companyId: user.companyId } 
+    });
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -63,40 +66,44 @@ export async function createTrip(req: Request, res: Response) {
     }
 
     // 2. Fetch Driver and check business rules
-    const driver = await prisma.driver.findUnique({ where: { id: driverId } });
+    const driver = await prisma.driver.findFirst({ 
+      where: { id: driverId, companyId: user.companyId } 
+    });
     if (!driver) {
       return res.status(404).json({ error: 'Driver not found' });
     }
 
     if (driver.status === DriverStatus.SUSPENDED) {
-      return res.status(400).json({ error: 'Driver is currently SUSPENDED' });
-    }
-
-    const today = new Date();
-    if (new Date(driver.licenseExpiryDate) < today) {
-      return res.status(400).json({ error: 'Driver driving license is expired' });
+      return res.status(400).json({ error: 'Driver is suspended and cannot be assigned to trips' });
     }
 
     if (driver.status === DriverStatus.ON_TRIP) {
       return res.status(400).json({ error: 'Driver is already assigned to an ongoing trip' });
     }
 
-    // 3. Cargo weight check
+    // Expiry check
+    if (new Date(driver.licenseExpiryDate) < new Date()) {
+      return res.status(400).json({ error: 'Driver driving license is expired and cannot be dispatched' });
+    }
+
+    // Capacity check
     if (weight > vehicle.maxLoadCapacityKg) {
-      return res.status(400).json({
-        error: `Cargo weight (${weight} kg) exceeds vehicle maximum capacity (${vehicle.maxLoadCapacityKg} kg)`
+      return res.status(400).json({ 
+        error: `Cargo weight (${weight} kg) exceeds vehicle max load capacity (${vehicle.maxLoadCapacityKg} kg)` 
       });
     }
 
+    // 3. Create Draft Trip
     const trip = await prisma.trip.create({
       data: {
         source: source.trim(),
         destination: destination.trim(),
-        vehicleId,
-        driverId,
         cargoWeightKg: weight,
         plannedDistanceKm: distance,
-        status: TripStatus.DRAFT
+        vehicleId,
+        driverId,
+        status: TripStatus.DRAFT,
+        companyId: user.companyId
       },
       include: {
         vehicle: true,
@@ -118,9 +125,8 @@ export async function dispatchTrip(req: Request, res: Response) {
   const user = (req as any).user;
 
   try {
-    // Check if trip exists and is DRAFT
-    const trip = await prisma.trip.findUnique({
-      where: { id },
+    const trip = await prisma.trip.findFirst({
+      where: { id, companyId: user.companyId },
       include: { vehicle: true, driver: true }
     });
 
@@ -166,7 +172,6 @@ export async function dispatchTrip(req: Request, res: Response) {
 
     // Single DB Transaction to dispatch
     const updatedTrip = await prisma.$transaction(async (tx) => {
-      // 1. Set Trip status to DISPATCHED
       const updated = await tx.trip.update({
         where: { id },
         data: {
@@ -176,13 +181,11 @@ export async function dispatchTrip(req: Request, res: Response) {
         include: { vehicle: true, driver: true }
       });
 
-      // 2. Set Vehicle.status = ON_TRIP
       await tx.vehicle.update({
         where: { id: trip.vehicleId },
         data: { status: VehicleStatus.ON_TRIP }
       });
 
-      // 3. Set Driver.status = ON_TRIP
       await tx.driver.update({
         where: { id: trip.driverId },
         data: { status: DriverStatus.ON_TRIP }
@@ -220,8 +223,8 @@ export async function completeTrip(req: Request, res: Response) {
   }
 
   try {
-    const trip = await prisma.trip.findUnique({
-      where: { id },
+    const trip = await prisma.trip.findFirst({
+      where: { id, companyId: user.companyId },
       include: { vehicle: true, driver: true }
     });
 
@@ -243,7 +246,6 @@ export async function completeTrip(req: Request, res: Response) {
 
     // Transaction to complete trip
     const updatedTrip = await prisma.$transaction(async (tx) => {
-      // 1. Set Trip fields
       const updated = await tx.trip.update({
         where: { id },
         data: {
@@ -255,22 +257,17 @@ export async function completeTrip(req: Request, res: Response) {
         include: { vehicle: true, driver: true }
       });
 
-      // Fetch the current vehicle to see if its status is RETIRED
       const dbVehicle = await tx.vehicle.findUnique({ where: { id: trip.vehicleId } });
       const nextVehicleStatus = dbVehicle?.status === VehicleStatus.RETIRED ? VehicleStatus.RETIRED : VehicleStatus.AVAILABLE;
 
-      // 2. Revert Vehicle.status to AVAILABLE (unless RETIRED) and increment odometer
       await tx.vehicle.update({
         where: { id: trip.vehicleId },
         data: {
           status: nextVehicleStatus,
-          odometer: {
-            increment: distance
-          }
+          odometer: { increment: distance }
         }
       });
 
-      // 3. Revert Driver.status to AVAILABLE (unless SUSPENDED)
       const dbDriver = await tx.driver.findUnique({ where: { id: trip.driverId } });
       const nextDriverStatus = dbDriver?.status === DriverStatus.SUSPENDED ? DriverStatus.SUSPENDED : DriverStatus.AVAILABLE;
 
@@ -279,14 +276,6 @@ export async function completeTrip(req: Request, res: Response) {
         data: { status: nextDriverStatus }
       });
 
-      // If fuel is consumed, let's also auto-log a FuelLog or let the user do it manually.
-      // Since fuelConsumedL is required, let's check if the system expects a FuelLog to be created.
-      // The prompt does not say it has to be created automatically, but creating it makes operational cost calculations seamless.
-      // Wait, let's read carefully: "Completing a Trip (DISPATCHED → COMPLETED) must, in a single transaction: require final odometer + fuel consumed, set Trip.status, revert Vehicle.status and Driver.status to AVAILABLE, increment Vehicle.odometer."
-      // It does NOT say "create a FuelLog record". But wait, if they log fuel, they might want to track cost.
-      // We will keep FuelLog manual because a fuel log has a "cost" field which is NOT provided in the trip completion request body.
-      // Therefore, we do not auto-create a FuelLog, but we do store actualDistanceKm and fuelConsumedL in the Trip.
-      
       return updated;
     });
 
@@ -304,8 +293,8 @@ export async function cancelTrip(req: Request, res: Response) {
   const user = (req as any).user;
 
   try {
-    const trip = await prisma.trip.findUnique({
-      where: { id },
+    const trip = await prisma.trip.findFirst({
+      where: { id, companyId: user.companyId },
       include: { vehicle: true, driver: true }
     });
 
@@ -326,7 +315,6 @@ export async function cancelTrip(req: Request, res: Response) {
     }
 
     const updatedTrip = await prisma.$transaction(async (tx) => {
-      // 1. Set Trip status to CANCELLED
       const updated = await tx.trip.update({
         where: { id },
         data: {
@@ -336,7 +324,6 @@ export async function cancelTrip(req: Request, res: Response) {
         include: { vehicle: true, driver: true }
       });
 
-      // 2. If it was dispatched, revert statuses
       if (trip.status === TripStatus.DISPATCHED) {
         const dbVehicle = await tx.vehicle.findUnique({ where: { id: trip.vehicleId } });
         const nextVehicleStatus = dbVehicle?.status === VehicleStatus.RETIRED ? VehicleStatus.RETIRED : VehicleStatus.AVAILABLE;
@@ -363,6 +350,76 @@ export async function cancelTrip(req: Request, res: Response) {
     return res.json(updatedTrip);
   } catch (err) {
     console.error('Cancel trip error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+// Trip Document attachments (BOL, POD, Receipt) using S3
+export async function getTripDocuments(req: Request, res: Response) {
+  const { id } = req.params;
+  const user = (req as any).user;
+
+  try {
+    const trip = await prisma.trip.findFirst({
+      where: { id, companyId: user.companyId }
+    });
+    if (!trip) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    const documents = await prisma.tripDocument.findMany({
+      where: { tripId: id },
+      orderBy: { createdAt: 'desc' }
+    });
+    return res.json(documents);
+  } catch (err) {
+    console.error('Get trip documents error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+export async function uploadTripDocument(req: Request, res: Response) {
+  const { id } = req.params;
+  const { title, docType } = req.body;
+  const user = (req as any).user;
+  const file = req.file;
+
+  if (!title || !docType) {
+    return res.status(400).json({ error: 'Required fields: title, docType' });
+  }
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  try {
+    const trip = await prisma.trip.findFirst({
+      where: { id, companyId: user.companyId }
+    });
+    if (!trip) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    // Upload to S3 (or fallback to local disk)
+    const { s3Key, s3Url } = await uploadFile(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      user.companyId
+    );
+
+    const document = await prisma.tripDocument.create({
+      data: {
+        tripId: id,
+        title: title.trim(),
+        docType: docType.trim(),
+        s3Key,
+        s3Url
+      }
+    });
+
+    return res.status(201).json(document);
+  } catch (err) {
+    console.error('Upload trip document error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

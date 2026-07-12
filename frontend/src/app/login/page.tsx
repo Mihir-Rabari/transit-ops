@@ -3,17 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Shield, KeyRound, Mail, User as UserIcon, HelpCircle } from 'lucide-react';
+import { Shield, KeyRound, Mail, User as UserIcon, HelpCircle, Building } from 'lucide-react';
 
 export default function LoginPage() {
   const { user, login, register, loading } = useAuth();
   const router = useRouter();
 
   const [isRegistering, setIsRegistering] = useState(false);
+  const [tenantId, setTenantId] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('FLEET_MANAGER');
+  const [companyName, setCompanyName] = useState('');
   
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -21,7 +22,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      // Auto detect and route user on start if already logged in
+      const role = user.role;
+      if (role === 'ADMIN' || role === 'FLEET_MANAGER') {
+        router.push('/dashboard/manager');
+      } else if (role === 'DRIVER') {
+        router.push('/dashboard/driver');
+      } else if (role === 'SAFETY_OFFICER') {
+        router.push('/dashboard/safety');
+      } else if (role === 'FINANCIAL_ANALYST') {
+        router.push('/dashboard/finance');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [user, loading, router]);
 
@@ -33,12 +46,19 @@ export default function LoginPage() {
 
     try {
       if (isRegistering) {
-        await register(name, email, password, role);
-        setSuccess('Account registered successfully! You can now log in.');
+        if (!companyName.trim()) {
+          throw new Error('Company Name is required for registration.');
+        }
+        const generatedTenantId = await register(name, email, password, companyName);
+        setSuccess(`Company registered successfully! Log in using Tenant ID: ${generatedTenantId}`);
+        setTenantId(generatedTenantId);
         setIsRegistering(false);
         setPassword('');
       } else {
-        await login(email, password);
+        if (!tenantId.trim()) {
+          throw new Error('Tenant ID is required to log in.');
+        }
+        await login(tenantId, email, password);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');
@@ -65,10 +85,12 @@ export default function LoginPage() {
             TO
           </div>
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
-            {isRegistering ? 'Create your account' : 'Sign in to TransitOps'}
+            {isRegistering ? 'Register your Company' : 'Sign in to TransitOps'}
           </h2>
-          <p className="mt-1 text-sm text-slate-400 dark:text-dark-muted">
-            {isRegistering ? 'Join the transport operations system' : 'Enter your credentials to continue'}
+          <p className="mt-1 text-sm text-slate-400 dark:text-dark-muted text-center">
+            {isRegistering 
+              ? 'Onboard your transport organization and create an admin profile' 
+              : 'Enter your Tenant ID and credentials to continue'}
           </p>
         </div>
 
@@ -86,25 +108,68 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegistering && (
+          
+          {!isRegistering && (
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-                Full Name
+                Tenant ID (Company Code)
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                  <UserIcon size={16} />
+                  <Building size={16} />
                 </span>
                 <input
                   type="text"
                   required
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+                  value={tenantId}
+                  onChange={(e) => setTenantId(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
                 />
               </div>
             </div>
+          )}
+
+          {isRegistering && (
+            <>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
+                  Company Name
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <Building size={16} />
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Acme Fleet Operations"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
+                  Administrator Name
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <UserIcon size={16} />
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
+                  />
+                </div>
+              </div>
+            </>
           )}
 
           <div>
@@ -118,7 +183,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
-                placeholder="you@example.com"
+                placeholder="admin@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
@@ -145,36 +210,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {isRegistering && (
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-                System Role
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                  <Shield size={16} />
-                </span>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500 appearance-none"
-                >
-                  <option value="ADMIN">Administrator (User & System Admin)</option>
-                  <option value="FLEET_MANAGER">Fleet Manager (Full Access)</option>
-                  <option value="DRIVER">Driver (Trip Executions)</option>
-                  <option value="SAFETY_OFFICER">Safety Officer (Compliance & Safety)</option>
-                  <option value="FINANCIAL_ANALYST">Financial Analyst (Read-Only Reports)</option>
-                </select>
-              </div>
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={submitting}
             className="w-full rounded-lg bg-brand-600 py-3 text-sm font-semibold text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:bg-brand-400 disabled:cursor-not-allowed transition-all shadow-md shadow-brand-600/10"
           >
-            {submitting ? 'Please wait...' : isRegistering ? 'Register Account' : 'Sign In'}
+            {submitting ? 'Please wait...' : isRegistering ? 'Register Company' : 'Sign In'}
           </button>
         </form>
 
@@ -188,7 +229,7 @@ export default function LoginPage() {
             }}
             className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
-            {isRegistering ? 'Already have an account? Sign in' : "Don't have an account? Register"}
+            {isRegistering ? 'Already have an organization? Sign in' : "Register a new Company Tenant"}
           </button>
         </div>
 
@@ -196,7 +237,7 @@ export default function LoginPage() {
         <div className="mt-8 flex items-start space-x-2 rounded-lg bg-blue-50/50 p-3 text-xs text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-100/50 dark:border-blue-900/10">
           <HelpCircle size={16} className="mt-0.5 shrink-0" />
           <p>
-            <strong>First time setup?</strong> The database is completely empty. Toggle <strong>Register</strong> above to create the initial <strong>Administrator</strong> or <strong>Fleet Manager</strong> user.
+            <strong>First time setup?</strong> Click <strong>Register a new Company Tenant</strong> above to initialize a company and generate your unique <strong>Tenant ID</strong>.
           </p>
         </div>
 

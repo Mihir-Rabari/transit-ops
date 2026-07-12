@@ -15,7 +15,10 @@ import {
   Play, 
   XCircle,
   Clock,
-  Gauge
+  Gauge,
+  FileText,
+  Upload,
+  Eye
 } from 'lucide-react';
 
 interface Vehicle {
@@ -53,6 +56,14 @@ interface Trip {
   };
 }
 
+interface DocumentRecord {
+  id: string;
+  title: string;
+  docType: string;
+  s3Url: string;
+  createdAt: string;
+}
+
 export default function TripsPage() {
   const { user } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -76,6 +87,16 @@ export default function TripsPage() {
   const [actualDistance, setActualDistance] = useState('');
   const [fuelConsumed, setFuelConsumed] = useState('');
   const [completionError, setCompletionError] = useState<string | null>(null);
+
+  // Document Management Modal State
+  const [selectedTripForDocs, setSelectedTripForDocs] = useState<Trip | null>(null);
+  const [tripDocs, setTripDocs] = useState<DocumentRecord[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docTitle, setDocTitle] = useState('');
+  const [docType, setDocType] = useState('BOL');
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docUploadError, setDocUploadError] = useState<string | null>(null);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   const fetchTrips = useCallback(async () => {
     setLoading(true);
@@ -116,7 +137,7 @@ export default function TripsPage() {
     setFormError(null);
 
     if (!source || !destination || !vehicleId || !driverId || !cargoWeight || !plannedDistance) {
-      setFormError('Please fill in all required fields');
+      setFormError('Please fill in all fields');
       return;
     }
 
@@ -133,7 +154,7 @@ export default function TripsPage() {
         })
       });
 
-      // Reset Form and refetch
+      // Clear Form and reload
       setSource('');
       setDestination('');
       setVehicleId('');
@@ -157,7 +178,7 @@ export default function TripsPage() {
   };
 
   const handleCancel = async (tripId: string) => {
-    if (!confirm('Are you sure you want to cancel this trip?')) return;
+    if (!confirm('Are you sure you want to cancel this assignment?')) return;
     try {
       await apiRequest(`/trips/${tripId}/cancel`, { method: 'PATCH' });
       fetchTrips();
@@ -171,10 +192,6 @@ export default function TripsPage() {
     setCompletionError(null);
 
     if (!selectedTripForComplete) return;
-    if (!actualDistance || !fuelConsumed) {
-      setCompletionError('Please enter actual distance and fuel consumed');
-      return;
-    }
 
     try {
       await apiRequest(`/trips/${selectedTripForComplete.id}/complete`, {
@@ -194,14 +211,107 @@ export default function TripsPage() {
     }
   };
 
+  // Drag and Drop implementation
+  const handleDragStart = (e: React.DragEvent, trip: Trip) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ id: trip.id, status: trip.status }));
+  };
+
+  const handleCardDrop = async (e: React.DragEvent, targetStatus: Trip['status']) => {
+    e.preventDefault();
+    const dataJson = e.dataTransfer.getData('text/plain');
+    if (!dataJson) return;
+
+    try {
+      const { id, status: originalStatus } = JSON.parse(dataJson) as { id: string; status: Trip['status'] };
+
+      if (originalStatus === targetStatus) return;
+
+      if (targetStatus === 'DISPATCHED') {
+        if (originalStatus === 'DRAFT') {
+          await handleDispatch(id);
+        } else {
+          alert('Only DRAFT trips can be dispatched.');
+        }
+      } else if (targetStatus === 'COMPLETED') {
+        if (originalStatus === 'DISPATCHED') {
+          const tripToComplete = trips.find(t => t.id === id);
+          if (tripToComplete) {
+            setSelectedTripForComplete(tripToComplete);
+          }
+        } else {
+          alert('Only DISPATCHED trips can be completed.');
+        }
+      } else if (targetStatus === 'CANCELLED') {
+        if (originalStatus === 'DRAFT' || originalStatus === 'DISPATCHED') {
+          await handleCancel(id);
+        } else {
+          alert('Cannot cancel a completed trip.');
+        }
+      } else if (targetStatus === 'DRAFT') {
+        alert('Cannot revert a trip back to DRAFT once transitioned.');
+      }
+    } catch (err) {
+      console.error('Drop handling failed:', err);
+    }
+  };
+
+  // Documents loading & uploading
+  const openDocsModal = async (trip: Trip) => {
+    setSelectedTripForDocs(trip);
+    setDocsLoading(true);
+    setDocUploadError(null);
+    try {
+      const docs = await apiRequest(`/trips/${trip.id}/documents`);
+      setTripDocs(docs);
+    } catch (err: any) {
+      console.error('Failed to load documents:', err);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  const handleDocUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDocUploadError(null);
+
+    if (!selectedTripForDocs || !docTitle || !docFile) {
+      setDocUploadError('Title and File are required');
+      return;
+    }
+
+    setUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', docTitle);
+      formData.append('docType', docType);
+      formData.append('file', docFile);
+
+      await apiRequest(`/trips/${selectedTripForDocs.id}/documents`, {
+        method: 'POST',
+        body: formData
+      });
+
+      // Clear upload form and reload documents
+      setDocTitle('');
+      setDocFile(null);
+      
+      const docs = await apiRequest(`/trips/${selectedTripForDocs.id}/documents`);
+      setTripDocs(docs);
+    } catch (err: any) {
+      setDocUploadError(err.message || 'Failed to upload document');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
   // Group trips by status
   const draftTrips = trips.filter(t => t.status === 'DRAFT');
   const dispatchedTrips = trips.filter(t => t.status === 'DISPATCHED');
   const completedTrips = trips.filter(t => t.status === 'COMPLETED');
   const cancelledTrips = trips.filter(t => t.status === 'CANCELLED');
 
-  const isFleetManager = user?.role === 'FLEET_MANAGER';
-  const isDriverOrManager = user?.role === 'FLEET_MANAGER' || user?.role === 'DRIVER';
+  const isFleetManager = user?.role === 'FLEET_MANAGER' || user?.role === 'ADMIN';
+  const isDriverOrManager = user?.role === 'FLEET_MANAGER' || user?.role === 'ADMIN' || user?.role === 'DRIVER';
 
   return (
     <div className="space-y-6">
@@ -210,7 +320,7 @@ export default function TripsPage() {
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Trip Management</h2>
-          <p className="text-sm text-slate-400 dark:text-dark-muted">Orchestrate cargo dispatches, track driver runs, and record trip outcomes.</p>
+          <p className="text-sm text-slate-400 dark:text-dark-muted">Drag and drop cards to change trip statuses natively.</p>
         </div>
         {isFleetManager && (
           <button
@@ -342,7 +452,7 @@ export default function TripsPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-500 border-r-transparent" />
         </div>
       ) : trips.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card shadow-sm">
           <Route className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
           <h3 className="text-md font-bold text-slate-700 dark:text-slate-300">No trips logged in the system yet</h3>
           <p className="mt-1 text-xs text-slate-400 dark:text-dark-muted">Register a vehicle and a driver first to create a trip.</p>
@@ -351,14 +461,23 @@ export default function TripsPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           
           {/* Column 1: Drafts */}
-          <div className="space-y-4">
+          <div 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleCardDrop(e, 'DRAFT')}
+            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+          >
             <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
               <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Draft ({draftTrips.length})</span>
               <span className="h-2 w-2 rounded-full bg-slate-400" />
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {draftTrips.map((t) => (
-                <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all">
+                <div 
+                  key={t.id} 
+                  draggable={isDriverOrManager}
+                  onDragStart={(e) => handleDragStart(e, t)}
+                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all cursor-grab active:cursor-grabbing"
+                >
                   <div className="flex justify-between items-start text-xs font-semibold text-slate-400">
                     <span className="font-mono text-2xs truncate max-w-[100px]">ID: {t.id.substring(0, 8)}</span>
                     <span className="text-slate-500">Draft</span>
@@ -414,14 +533,23 @@ export default function TripsPage() {
           </div>
 
           {/* Column 2: Dispatched */}
-          <div className="space-y-4">
+          <div 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleCardDrop(e, 'DISPATCHED')}
+            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+          >
             <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
               <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Dispatched ({dispatchedTrips.length})</span>
               <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {dispatchedTrips.map((t) => (
-                <div key={t.id} className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all">
+                <div 
+                  key={t.id} 
+                  draggable={isDriverOrManager}
+                  onDragStart={(e) => handleDragStart(e, t)}
+                  className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all cursor-grab active:cursor-grabbing"
+                >
                   <div className="flex justify-between items-start text-xs font-semibold text-blue-500">
                     <span className="font-mono text-2xs truncate max-w-[100px] text-slate-400">ID: {t.id.substring(0, 8)}</span>
                     <span>On Route</span>
@@ -453,38 +581,56 @@ export default function TripsPage() {
                       <p className="font-bold text-slate-700 dark:text-slate-300">{t.plannedDistanceKm} km</p>
                     </div>
                   </div>
-                  {isDriverOrManager && (
-                    <div className="flex space-x-2 pt-1">
-                      <button
-                        onClick={() => setSelectedTripForComplete(t)}
-                        className="flex flex-1 items-center justify-center space-x-1 rounded bg-emerald-600 py-1.5 text-2xs font-semibold text-white hover:bg-emerald-700"
-                      >
-                        <CheckCircle2 size={10} />
-                        <span>Complete</span>
-                      </button>
-                      <button
-                        onClick={() => handleCancel(t.id)}
-                        className="flex flex-1 items-center justify-center space-x-1 rounded border border-slate-200 hover:bg-red-50 hover:text-red-500 dark:border-dark-border dark:hover:bg-red-950/20 text-2xs font-semibold"
-                      >
-                        <XCircle size={10} />
-                        <span>Cancel</span>
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex space-x-2 pt-1">
+                    {isDriverOrManager && (
+                      <>
+                        <button
+                          onClick={() => setSelectedTripForComplete(t)}
+                          className="flex flex-1 items-center justify-center space-x-1 rounded bg-emerald-600 py-1.5 text-2xs font-semibold text-white hover:bg-emerald-700 animate-pulse"
+                        >
+                          <CheckCircle2 size={10} />
+                          <span>Complete</span>
+                        </button>
+                        <button
+                          onClick={() => handleCancel(t.id)}
+                          className="flex flex-1 items-center justify-center space-x-1 rounded border border-slate-200 hover:bg-red-50 hover:text-red-500 dark:border-dark-border dark:hover:bg-red-950/20 text-2xs font-semibold"
+                        >
+                          <XCircle size={10} />
+                          <span>Cancel</span>
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => openDocsModal(t)}
+                      className="flex items-center justify-center rounded border border-slate-200 px-2 py-1 text-2xs font-semibold text-slate-400 hover:text-brand-500 dark:border-dark-border"
+                      title="Trip Documents"
+                    >
+                      <FileText size={12} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Column 3: Completed */}
-          <div className="space-y-4">
+          <div 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleCardDrop(e, 'COMPLETED')}
+            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+          >
             <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
               <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Completed ({completedTrips.length})</span>
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {completedTrips.map((t) => (
-                <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all opacity-85">
+                <div 
+                  key={t.id} 
+                  draggable={isDriverOrManager}
+                  onDragStart={(e) => handleDragStart(e, t)}
+                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all opacity-85 cursor-grab active:cursor-grabbing"
+                >
                   <div className="flex justify-between items-start text-xs font-semibold text-emerald-500">
                     <span className="font-mono text-2xs truncate max-w-[100px] text-slate-400">ID: {t.id.substring(0, 8)}</span>
                     <span>Delivered</span>
@@ -516,8 +662,15 @@ export default function TripsPage() {
                       <p className="font-bold text-slate-700 dark:text-slate-300 truncate">{t.driver.name}</p>
                     </div>
                   </div>
-                  <div className="text-3xs text-slate-400 mt-1 dark:text-dark-muted text-right">
-                    Ended: {new Date(t.completedAt!).toLocaleDateString()}
+                  <div className="flex items-center justify-between text-3xs text-slate-400 dark:text-dark-muted pt-1">
+                    <button
+                      onClick={() => openDocsModal(t)}
+                      className="flex items-center space-x-1 rounded bg-slate-50 border border-slate-200/50 px-2 py-1 font-semibold text-slate-500 hover:text-brand-600 dark:bg-slate-800/40 dark:border-dark-border"
+                    >
+                      <FileText size={10} />
+                      <span>Documents</span>
+                    </button>
+                    <span>Ended: {new Date(t.completedAt!).toLocaleDateString()}</span>
                   </div>
                 </div>
               ))}
@@ -525,14 +678,23 @@ export default function TripsPage() {
           </div>
 
           {/* Column 4: Cancelled */}
-          <div className="space-y-4">
+          <div 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleCardDrop(e, 'CANCELLED')}
+            className="space-y-4 rounded-xl bg-slate-100/50 dark:bg-slate-900/10 p-3 min-h-[500px]"
+          >
             <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-dark-border">
               <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Cancelled ({cancelledTrips.length})</span>
               <span className="h-2 w-2 rounded-full bg-red-400" />
             </div>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {cancelledTrips.map((t) => (
-                <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all opacity-70">
+                <div 
+                  key={t.id} 
+                  draggable={isDriverOrManager}
+                  onDragStart={(e) => handleDragStart(e, t)}
+                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-dark-border dark:bg-dark-card space-y-3 hover:shadow-md transition-all opacity-70 cursor-grab active:cursor-grabbing"
+                >
                   <div className="flex justify-between items-start text-xs font-semibold text-red-500">
                     <span className="font-mono text-2xs truncate max-w-[100px] text-slate-400">ID: {t.id.substring(0, 8)}</span>
                     <span>Aborted</span>
@@ -643,6 +805,126 @@ export default function TripsPage() {
                 Log Delivery Outcome
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Trip Documents Management Modal */}
+      {selectedTripForDocs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border mb-4">
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-white">Trip Documents & Manifests</h3>
+                <p className="text-xs text-slate-400 dark:text-dark-muted">
+                  Route: {selectedTripForDocs.source} &rarr; {selectedTripForDocs.destination}
+                </p>
+              </div>
+              <button onClick={() => setSelectedTripForDocs(null)} className="text-slate-400 hover:text-slate-600">
+                <X size={18} />
+              </button>
+            </div>
+
+            {docUploadError && (
+              <div className="mb-4 rounded bg-red-50 p-2.5 text-xs font-semibold text-red-500">
+                {docUploadError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Document upload form */}
+              <div className="border-r border-slate-100 dark:border-dark-border pr-0 md:pr-6 space-y-3">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Attach Document</h4>
+                
+                <form onSubmit={handleDocUpload} className="space-y-3">
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Bill of Lading, Delivery Receipt"
+                      value={docTitle}
+                      onChange={(e) => setDocTitle(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Document Type *</label>
+                    <select
+                      value={docType}
+                      onChange={(e) => setDocType(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-800 focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white"
+                    >
+                      <option value="BOL">Bill of Lading (BOL)</option>
+                      <option value="POD">Proof of Delivery (POD)</option>
+                      <option value="Invoice">Fuel/toll Invoice</option>
+                      <option value="Permit">Transit Permit</option>
+                      <option value="Other">Other Document</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-3xs font-bold text-slate-400 uppercase mb-1">Select File *</label>
+                    <input
+                      type="file"
+                      required
+                      onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+                      className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-3xs file:bg-slate-100 hover:file:bg-slate-200 dark:file:bg-slate-800"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={uploadingDoc}
+                    className="w-full flex items-center justify-center space-x-1 rounded bg-brand-600 py-2 text-xs font-semibold text-white hover:bg-brand-700"
+                  >
+                    <Upload size={12} />
+                    <span>{uploadingDoc ? 'Uploading...' : 'Upload File'}</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Documents list */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Uploaded Files</h4>
+
+                {docsLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-r-transparent" />
+                  </div>
+                ) : tripDocs.length === 0 ? (
+                  <p className="text-xs text-slate-400 dark:text-dark-muted text-center py-12">No files uploaded yet.</p>
+                ) : (
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {tripDocs.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-900/10 border border-slate-100 dark:border-dark-border text-xs">
+                        <div className="min-w-0 pr-2">
+                          <p className="font-semibold text-slate-700 dark:text-slate-300 truncate" title={doc.title}>
+                            {doc.title}
+                          </p>
+                          <span className="inline-block text-4xs font-mono font-bold bg-slate-200/50 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-500">
+                            {doc.docType}
+                          </span>
+                        </div>
+                        <a
+                          href={doc.s3Url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-bold text-brand-600 hover:underline shrink-0"
+                        >
+                          Open
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
           </div>
         </div>
       )}

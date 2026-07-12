@@ -1,5 +1,3 @@
-'use client';
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiRequest, setTokens, clearTokens } from '../utils/api';
@@ -9,13 +7,14 @@ interface User {
   name: string;
   email: string;
   role: 'ADMIN' | 'FLEET_MANAGER' | 'DRIVER' | 'SAFETY_OFFICER' | 'FINANCIAL_ANALYST';
+  companyId: string;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, role: string) => Promise<void>;
+  login: (tenantId: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, companyName: string) => Promise<string>;
   logout: () => Promise<void>;
 }
 
@@ -41,27 +40,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (tenantId: string, email: string, password: string) => {
     try {
       const data = await apiRequest('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ tenantId: tenantId.trim(), email, password })
       });
       setTokens(data.accessToken, data.refreshToken);
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
-      router.push('/dashboard');
+      
+      // Auto detect role and redirect to specific dashboards
+      const role = data.user.role;
+      if (role === 'ADMIN' || role === 'FLEET_MANAGER') {
+        router.push('/dashboard/manager');
+      } else if (role === 'DRIVER') {
+        router.push('/dashboard/driver');
+      } else if (role === 'SAFETY_OFFICER') {
+        router.push('/dashboard/safety');
+      } else if (role === 'FINANCIAL_ANALYST') {
+        router.push('/dashboard/finance');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       throw new Error(err.message || 'Login failed');
     }
   };
 
-  const register = async (name: string, email: string, password: string, role: string) => {
+  const register = async (name: string, email: string, password: string, companyName: string): Promise<string> => {
     try {
-      await apiRequest('/auth/register', {
+      const data = await apiRequest('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password, role })
+        body: JSON.stringify({ name, email, password, companyName })
       });
+      return data.tenantId; // Return tenant ID for display/welcome
     } catch (err: any) {
       throw new Error(err.message || 'Registration failed');
     }

@@ -2,10 +2,14 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../config/db';
 import { Role } from '@prisma/client';
+import { sendCredentialsEmail } from '../utils/mailer';
 
 export async function getAllUsers(req: Request, res: Response) {
+  const user = (req as any).user;
+
   try {
     const users = await prisma.user.findMany({
+      where: { companyId: user.companyId },
       include: {
         driver: {
           select: {
@@ -40,6 +44,7 @@ export async function getAllUsers(req: Request, res: Response) {
 
 export async function createUser(req: Request, res: Response) {
   const { name, email, password, role, driverId } = req.body;
+  const currentUser = (req as any).user;
 
   if (!name || !email || !password || !role) {
     return res.status(400).json({ error: 'Required fields: name, email, password, role' });
@@ -58,13 +63,14 @@ export async function createUser(req: Request, res: Response) {
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await prisma.$transaction(async (tx) => {
-      // 1. Create the user
+      // 1. Create the user under the admin's companyId
       const createdUser = await tx.user.create({
         data: {
           name: name.trim(),
           email: email.toLowerCase().trim(),
           passwordHash,
-          role: role as Role
+          role: role as Role,
+          companyId: currentUser.companyId
         }
       });
 
@@ -85,6 +91,9 @@ export async function createUser(req: Request, res: Response) {
       return createdUser;
     });
 
+    // Send credentials to user via email (asynchronously)
+    sendCredentialsEmail(user.email, user.name, user.role, password, currentUser.companyId).catch(console.error);
+
     return res.status(201).json({
       id: user.id,
       name: user.name,
@@ -100,9 +109,12 @@ export async function createUser(req: Request, res: Response) {
 export async function updateUser(req: Request, res: Response) {
   const { id } = req.params;
   const { name, role, driverId, password } = req.body;
+  const currentUser = (req as any).user;
 
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findFirst({
+      where: { id, companyId: currentUser.companyId }
+    });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -136,7 +148,7 @@ export async function updateUser(req: Request, res: Response) {
           });
           
           if (driverId) {
-            // Break existing link for the target driver (since userId is unique)
+            // Break existing link for the target driver
             await tx.driver.updateMany({
               where: { userId: { not: null }, id: driverId },
               data: { userId: null }
@@ -159,6 +171,11 @@ export async function updateUser(req: Request, res: Response) {
       return u;
     });
 
+    // If password was reset, send notification (or print to console)
+    if (password) {
+      sendCredentialsEmail(updatedUser.email, updatedUser.name, updatedUser.role, password, currentUser.companyId).catch(console.error);
+    }
+
     return res.json({
       id: updatedUser.id,
       name: updatedUser.name,
@@ -173,15 +190,17 @@ export async function updateUser(req: Request, res: Response) {
 
 export async function deleteUser(req: Request, res: Response) {
   const { id } = req.params;
+  const currentUser = (req as any).user;
 
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findFirst({
+      where: { id, companyId: currentUser.companyId }
+    });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     // Don't allow deleting oneself
-    const currentUser = (req as any).user;
     if (currentUser && currentUser.id === id) {
       return res.status(400).json({ error: 'You cannot delete your own account' });
     }
