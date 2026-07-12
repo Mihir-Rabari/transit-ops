@@ -1,269 +1,448 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
-import { 
-  Truck, 
-  ShieldCheck, 
-  DollarSign, 
-  Route, 
-  Users, 
-  ArrowRight, 
-  BarChart3, 
-  FileText, 
-  Layers,
-  Sparkles,
-  Zap,
-  Globe,
-  Settings
-} from 'lucide-react';
 
+// ─── Live Status Board Data ────────────────────────────────────────────────
+const FLEET_INITIAL = [
+  { id: 'MH-04-AB-1123', type: 'Semi-Trailer',    driver: 'R. Mehta',     status: 'ontrip'    as const },
+  { id: 'KA-09-CD-4471', type: 'Tempo Traveller', driver: 'S. Kumar',     status: 'available' as const },
+  { id: 'DL-01-EF-8820', type: 'Container Truck', driver: 'P. Sharma',    status: 'ontrip'    as const },
+  { id: 'TN-22-GH-3302', type: 'Flatbed',         driver: '—',            status: 'inshop'    as const },
+  { id: 'GJ-05-JK-7714', type: 'Refrigerator Van',driver: 'A. Patel',    status: 'available' as const },
+  { id: 'MH-12-LM-2290', type: 'Mini Truck',      driver: 'V. Singh',     status: 'ontrip'    as const },
+  { id: 'UP-32-NP-9910', type: 'Tanker',          driver: '—',            status: 'inshop'    as const },
+  { id: 'RJ-14-QR-0055', type: 'Box Truck',       driver: 'M. Joshi',     status: 'available' as const },
+];
+
+type VehicleStatus = 'ontrip' | 'available' | 'inshop';
+
+const STATUS_CYCLES: Record<string, VehicleStatus[]> = {
+  'MH-04-AB-1123': ['ontrip', 'ontrip', 'ontrip', 'available'],
+  'KA-09-CD-4471': ['available', 'ontrip', 'available', 'available'],
+  'DL-01-EF-8820': ['ontrip', 'ontrip', 'available', 'ontrip'],
+  'TN-22-GH-3302': ['inshop', 'inshop', 'available', 'inshop'],
+  'GJ-05-JK-7714': ['available', 'available', 'ontrip', 'available'],
+  'MH-12-LM-2290': ['ontrip', 'available', 'ontrip', 'ontrip'],
+  'UP-32-NP-9910': ['inshop', 'available', 'inshop', 'inshop'],
+  'RJ-14-QR-0055': ['available', 'ontrip', 'available', 'available'],
+};
+
+const STATUS_LABEL: Record<VehicleStatus, string> = {
+  ontrip:    'On Trip',
+  available: 'Available',
+  inshop:    'In Shop',
+};
+
+const STATUS_CLASS: Record<VehicleStatus, string> = {
+  ontrip:    'status-badge status-badge--amber',
+  available: 'status-badge status-badge--green',
+  inshop:    'status-badge status-badge--slate',
+};
+
+const TILE_CLASS: Record<VehicleStatus, string> = {
+  ontrip:    'vehicle-tile vehicle-tile--ontrip',
+  available: 'vehicle-tile vehicle-tile--available',
+  inshop:    'vehicle-tile vehicle-tile--inshop',
+};
+
+// ─── Clock Component ───────────────────────────────────────────────────────
+function LiveClock() {
+  const [time, setTime] = useState('');
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString('en-IN', { hour12: false }));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <span className="telemetry text-[#8993A4] text-sm">{time}</span>;
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const { user } = useAuth();
+  const [fleet, setFleet] = useState(FLEET_INITIAL);
+  const [tick, setTick] = useState(0);
+
+  // Cycle fleet statuses every 3s to simulate live ops wall
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTick(t => (t + 1) % 4);
+    }, 3000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    setFleet(prev =>
+      prev.map(v => ({
+        ...v,
+        status: STATUS_CYCLES[v.id][tick],
+      }))
+    );
+  }, [tick]);
+
+  const onTrip    = fleet.filter(v => v.status === 'ontrip').length;
+  const available = fleet.filter(v => v.status === 'available').length;
+  const inShop    = fleet.filter(v => v.status === 'inshop').length;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 selection:bg-brand-500 selection:text-white font-sans overflow-x-hidden">
-      
-      {/* Glow effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div style={{ background: 'var(--color-base)', minHeight: '100vh', color: 'var(--color-text-primary)' }}>
 
-      {/* Navigation */}
-      <nav className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white font-bold shadow-lg shadow-brand-500/20 text-lg">
+      {/* ── NAV ───────────────────────────────────────────────────── */}
+      <nav style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-base)' }}
+           className="sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}
+                 className="h-8 w-8 rounded flex items-center justify-center font-bold text-sm font-display">
               TO
             </div>
-            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            <span className="font-display font-semibold text-base tracking-tight"
+                  style={{ color: 'var(--color-text-primary)' }}>
               TransitOps
             </span>
           </div>
-
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <Link 
-                href="/dashboard" 
-                className="flex items-center space-x-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 shadow-md hover:shadow-brand-500/10 transition-all"
-              >
-                <span>Console Dashboard</span>
-                <ArrowRight size={14} />
-              </Link>
-            ) : (
-              <>
-                <Link 
-                  href="/login" 
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link 
-                  href="/login?register=true" 
-                  className="rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-700 hover:border-slate-600 transition-all"
-                >
-                  Create Tenant
-                </Link>
-              </>
-            )}
+          <div className="flex items-center gap-4">
+            <LiveClock />
+            <Link href="/login"
+                  style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}
+                  className="btn-ghost text-sm hidden sm:flex">
+              Sign in
+            </Link>
+            <Link href="/login"
+                  className="btn-primary text-sm">
+              Get Access
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 pt-20 pb-16 text-center lg:pt-32 lg:pb-24 relative">
-        <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-slate-700/50 rounded-full px-3 py-1.5 text-xs text-brand-400 font-semibold mb-6 animate-pulse">
-          <Sparkles size={12} />
-          <span>Multi-Tenant Enterprise SaaS Platform</span>
-        </div>
-        
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl mx-auto leading-[1.1] text-white">
-          Real-Time Fleet Operations,{' '}
-          <span className="bg-gradient-to-r from-brand-400 via-brand-500 to-emerald-400 bg-clip-text text-transparent">
-            Reimagined.
+      {/* ── HERO ──────────────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-6 pt-14 pb-8">
+
+        {/* Fleet summary bar */}
+        <div className="flex items-center gap-6 mb-6"
+             style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px' }}>
+          <span className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            FLEET OPERATIONS BOARD
           </span>
-        </h1>
-        
-        <p className="mt-6 text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          The ultimate multi-tenant logistics orchestration engine. Track operational cost metrics, run transactional dispatches, attach manifests, and secure safety ledgers.
-        </p>
+          <div className="flex items-center gap-5 ml-auto">
+            <span className="flex items-center gap-1.5 telemetry text-xs">
+              <span style={{ color: 'var(--color-signal-amber)' }}>■</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>On Trip</span>
+              <span style={{ color: 'var(--color-signal-amber)', fontWeight: 600 }}>{onTrip}</span>
+            </span>
+            <span className="flex items-center gap-1.5 telemetry text-xs">
+              <span style={{ color: 'var(--color-signal-green)' }}>■</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>Available</span>
+              <span style={{ color: 'var(--color-signal-green)', fontWeight: 600 }}>{available}</span>
+            </span>
+            <span className="flex items-center gap-1.5 telemetry text-xs">
+              <span style={{ color: '#4A5568' }}>■</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>In Shop</span>
+              <span style={{ color: '#8993A4', fontWeight: 600 }}>{inShop}</span>
+            </span>
+          </div>
+        </div>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          {user ? (
-            <Link 
-              href="/dashboard" 
-              className="w-full sm:w-auto flex items-center justify-center space-x-2 rounded-xl bg-brand-600 px-8 py-4 text-base font-bold text-white hover:bg-brand-700 shadow-xl shadow-brand-500/10 transition-all transform hover:-translate-y-0.5"
-            >
-              <span>Go to Dashboard</span>
-              <ArrowRight size={18} />
+        {/* Live fleet grid — the signature element */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
+          {fleet.map(v => (
+            <div key={v.id} className={TILE_CLASS[v.status]}>
+              <div className="flex items-start justify-between gap-2">
+                <span className="vehicle-tile__reg">{v.id}</span>
+                <span className={STATUS_CLASS[v.status]}>{STATUS_LABEL[v.status]}</span>
+              </div>
+              <div>
+                <div className="vehicle-tile__type">{v.type}</div>
+                {v.driver !== '—' && (
+                  <div className="telemetry text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                    {v.driver}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Headline */}
+        <div className="max-w-3xl">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl lg:text-[56px] leading-tight"
+              style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>
+            Stop running your fleet
+            <br />
+            <span style={{ color: 'var(--color-signal-amber)' }}>from a spreadsheet.</span>
+          </h1>
+          <p className="mt-5 text-base sm:text-lg" style={{ color: 'var(--color-text-muted)', fontFamily: "'IBM Plex Sans'" }}>
+            TransitOps enforces the rules you currently enforce manually — blocked dispatches on expired licenses,
+            cargo weight limits before a vehicle leaves the yard, live odometer entries per run.
+            The operations board above is live. So is yours when you sign in.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/login" className="btn-primary">
+              Access Console →
             </Link>
-          ) : (
-            <>
-              <Link 
-                href="/login" 
-                className="w-full sm:w-auto flex items-center justify-center space-x-2 rounded-xl bg-brand-600 px-8 py-4 text-base font-bold text-white hover:bg-brand-700 shadow-xl shadow-brand-500/10 transition-all transform hover:-translate-y-0.5"
-              >
-                <span>Access Console</span>
-                <Zap size={18} />
-              </Link>
-              <Link 
-                href="/login" 
-                onClick={() => {
-                  // Wait, we can append a custom trigger or query state so it opens registration
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('register_flag', 'true');
-                  }
-                }}
-                className="w-full sm:w-auto rounded-xl bg-slate-800 border border-slate-700 px-8 py-4 text-base font-bold text-slate-200 hover:bg-slate-700 hover:border-slate-600 hover:text-white transition-all transform hover:-translate-y-0.5"
-              >
-                Onboard Company Tenant
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Floating Mock UI Element */}
-        <div className="mt-16 border border-slate-800 rounded-2xl bg-slate-900/60 p-2 shadow-2xl max-w-4xl mx-auto backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-4 md:p-6 text-left">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
-              <div className="flex items-center space-x-2">
-                <span className="h-3.5 w-3.5 rounded-full bg-red-500/80" />
-                <span className="h-3.5 w-3.5 rounded-full bg-yellow-500/80" />
-                <span className="h-3.5 w-3.5 rounded-full bg-emerald-500/80" />
-              </div>
-              <span className="text-2xs font-mono text-slate-500">HTTPS://APP.TRANSITOPS.COM/CONSOLE</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="rounded-lg bg-slate-900 border border-slate-800/80 p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-3xs font-bold text-slate-500 uppercase tracking-wider">Fleet Utilization</p>
-                    <p className="text-2xl font-extrabold text-white mt-1">94%</p>
-                  </div>
-                  <div className="rounded-lg bg-brand-500/10 p-2 text-brand-400">
-                    <Truck size={16} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="rounded-lg bg-slate-900 border border-slate-800/80 p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-3xs font-bold text-slate-500 uppercase tracking-wider">Active Deliveries</p>
-                    <p className="text-2xl font-extrabold text-emerald-400 mt-1">12 Ongoing</p>
-                  </div>
-                  <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-400">
-                    <Route size={16} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-slate-900 border border-slate-800/80 p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-3xs font-bold text-slate-500 uppercase tracking-wider">Company Tenant Scope</p>
-                    <p className="text-2xl font-extrabold text-indigo-400 mt-1 font-mono">ACME-F1</p>
-                  </div>
-                  <div className="rounded-lg bg-indigo-500/10 p-2 text-indigo-400">
-                    <Layers size={16} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      {/* Feature Section */}
-      <section className="bg-slate-950 py-20 border-t border-slate-850">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-extrabold text-white">Full-Stack Operational Intelligence</h2>
-            <p className="text-sm text-slate-400 mt-3">Every module in TransitOps is built to fulfill critical business rules, verified through database transactions.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            {/* Feature 1 */}
-            <div className="rounded-xl bg-slate-900 border border-slate-850 p-6 space-y-4 hover:border-brand-500/50 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400">
-                <Layers size={20} />
-              </div>
-              <h3 className="font-bold text-lg text-white">Multi-Tenant Partitioning</h3>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Register your organization to get a custom Tenant ID. Every user session, vehicle registry, driver profile, and expense log is securely partitioned.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="rounded-xl bg-slate-900 border border-slate-850 p-6 space-y-4 hover:border-brand-500/50 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                <Route size={20} />
-              </div>
-              <h3 className="font-bold text-lg text-white">Kanban State Machines</h3>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Dispatch, complete, or cancel trip dispatches. State changes require transactional execution, automatically updating fleet status records.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="rounded-xl bg-slate-900 border border-slate-850 p-6 space-y-4 hover:border-brand-500/50 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                <FileText size={20} />
-              </div>
-              <h3 className="font-bold text-lg text-white">S3 Manifest Attachments</h3>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Upload Bills of Lading, transit receipts, and driving credentials directly to AWS S3, with automatic fallback storage built-in.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="rounded-xl bg-slate-900 border border-slate-850 p-6 space-y-4 hover:border-brand-500/50 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
-                <Users size={20} />
-              </div>
-              <h3 className="font-bold text-lg text-white">Role-Based Workspaces</h3>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Unique terminals customized for Administrators, Fleet Managers, Drivers, Safety Compliance, and Financial Analysts.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="rounded-xl bg-slate-900 border border-slate-850 p-6 space-y-4 hover:border-brand-500/50 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
-                <ShieldCheck size={20} />
-              </div>
-              <h3 className="font-bold text-lg text-white">Safety & Compliance Audit</h3>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Monitor driver safety scores and enforce commercial license expiries. Automatic systems suspend drivers with expired records.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="rounded-xl bg-slate-900 border border-slate-850 p-6 space-y-4 hover:border-brand-500/50 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400">
-                <DollarSign size={20} />
-              </div>
-              <h3 className="font-bold text-lg text-white">Financial ROI Ledger</h3>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Audit fuel logs, tolls, and maintenance expenditures to evaluate live net profits and performance charts.
-              </p>
-            </div>
-
+            <Link href="/login" className="btn-ghost">
+              Register your company
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-900/40 py-12 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-6 w-6 rounded bg-brand-600 flex items-center justify-center text-white font-bold text-xs">TO</div>
-            <span className="font-bold text-slate-300">TransitOps SaaS</span>
+      {/* ── PROBLEMS ──────────────────────────────────────────────── */}
+      <section style={{ borderTop: '1px solid var(--color-border)' }} className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <p className="telemetry text-xs mb-8" style={{ color: 'var(--color-text-muted)' }}>
+            WHAT BREAKS WITHOUT ENFORCEMENT
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px"
+               style={{ background: 'var(--color-border)' }}>
+
+            {[
+              {
+                tag: '01 / DOUBLE BOOKING',
+                title: 'Same truck. Two dispatches.',
+                body: 'A vehicle assigned to Route A gets manually scheduled for Route B two hours later. The spreadsheet doesn\'t check. The yard finds out when the driver doesn\'t show.',
+              },
+              {
+                tag: '02 / EXPIRED LICENSE',
+                title: 'Driver dispatched. License expired yesterday.',
+                body: 'A commercial license expires. No one flags it. The driver is assigned to a 400 km run. The violation shows up after an accident or a checkpoint stop.',
+              },
+              {
+                tag: '03 / GHOST ODOMETER',
+                title: 'Fuel logs without mileage.',
+                body: 'Fuel refills get logged. Actual trip distances don\'t. Fuel efficiency numbers become meaningless. Maintenance intervals drift. Nobody knows until a breakdown.',
+              },
+            ].map(p => (
+              <div key={p.tag} className="p-8"
+                   style={{ background: 'var(--color-surface)' }}>
+                <div className="telemetry text-xs mb-4" style={{ color: 'var(--color-signal-amber)' }}>
+                  {p.tag}
+                </div>
+                <h3 className="font-display font-semibold text-lg mb-3"
+                    style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.01em' }}>
+                  {p.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                  {p.body}
+                </p>
+              </div>
+            ))}
           </div>
-          <p>© 2026 TransitOps, Inc. All rights reserved. Built for secure transport logistics.</p>
+        </div>
+      </section>
+
+      {/* ── ROLES ─────────────────────────────────────────────────── */}
+      <section style={{ borderTop: '1px solid var(--color-border)' }} className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <p className="telemetry text-xs mb-10" style={{ color: 'var(--color-text-muted)' }}>
+            YOUR CONSOLE, BY ROLE
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              {
+                role: 'Fleet Manager',
+                signal: 'var(--color-signal-amber)',
+                stops: [
+                  'Chasing drivers to confirm dispatch',
+                  'Manually checking vehicle capacity before every run',
+                  'Cross-referencing availability across different sheets',
+                ],
+                gets: 'One screen showing every asset status, with dispatch blocked automatically when rules aren\'t met.',
+              },
+              {
+                role: 'Driver',
+                signal: 'var(--color-signal-green)',
+                stops: [
+                  'Getting last-minute trip changes with no trail',
+                  'Submitting odometer photos via WhatsApp',
+                  'Wondering what happens after completing a route',
+                ],
+                gets: 'A terminal showing your current assignment, dispatch controls, and a direct upload for your credentials and trip documents.',
+              },
+              {
+                role: 'Safety Officer',
+                signal: '#3B82F6',
+                stops: [
+                  'Manually scanning license expiry dates every week',
+                  'Finding out a driver\'s medical clearance lapsed after dispatch',
+                  'Building compliance spreadsheets from scratch every quarter',
+                ],
+                gets: 'A live ledger of every driver\'s license status and safety score, with expiry alerts flagged 30 days ahead.',
+              },
+              {
+                role: 'Financial Analyst',
+                signal: '#A78BFA',
+                stops: [
+                  'Requesting fuel and maintenance data from ops',
+                  'Reconciling trip distances with fuel receipts by hand',
+                  'Estimating fleet ROI without per-vehicle cost breakdowns',
+                ],
+                gets: 'A live P&L board: per-vehicle acquisition, fuel, and maintenance cost vs. estimated revenue. One CSV export.',
+              },
+            ].map(r => (
+              <div key={r.role} className="ops-panel p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="h-2 w-2 rounded-full" style={{ background: r.signal }} />
+                  <span className="font-display font-semibold text-base"
+                        style={{ color: 'var(--color-text-primary)' }}>
+                    {r.role}
+                  </span>
+                </div>
+
+                <p className="text-xs mb-3 telemetry" style={{ color: 'var(--color-text-muted)' }}>
+                  STOPS WORRYING ABOUT
+                </p>
+                <ul className="space-y-2 mb-5">
+                  {r.stops.map(s => (
+                    <li key={s} className="flex items-start gap-2 text-sm"
+                        style={{ color: 'var(--color-text-muted)' }}>
+                      <span style={{ color: 'var(--color-signal-red)', marginTop: '2px' }}>✕</span>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                  <p className="text-xs mb-2 telemetry" style={{ color: 'var(--color-text-muted)' }}>
+                    GETS INSTEAD
+                  </p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
+                    {r.gets}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WORKFLOW ───────────────────────────────────────────────── */}
+      <section style={{ borderTop: '1px solid var(--color-border)' }} className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <p className="telemetry text-xs mb-10" style={{ color: 'var(--color-text-muted)' }}>
+            ENFORCED TRIP LIFECYCLE
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px"
+               style={{ background: 'var(--color-border)' }}>
+            {[
+              {
+                step: '01',
+                label: 'DRAFT',
+                color: 'var(--color-text-muted)',
+                rules: [
+                  'Vehicle must be in AVAILABLE status',
+                  'Driver must be in AVAILABLE status',
+                  'Cargo weight must not exceed vehicle\'s max load capacity',
+                ],
+              },
+              {
+                step: '02',
+                label: 'DISPATCHED',
+                color: 'var(--color-signal-amber)',
+                rules: [
+                  'Vehicle and driver status set to ON_TRIP immediately',
+                  'Driver\'s license must not be expired at dispatch time',
+                  'Neither vehicle nor driver can be re-assigned mid-trip',
+                ],
+              },
+              {
+                step: '03a',
+                label: 'COMPLETED',
+                color: 'var(--color-signal-green)',
+                rules: [
+                  'Actual distance and fuel consumed are required — no blanks',
+                  'Vehicle odometer is incremented by actual distance',
+                  'Vehicle and driver status revert to AVAILABLE',
+                ],
+              },
+              {
+                step: '03b',
+                label: 'CANCELLED',
+                color: 'var(--color-signal-red)',
+                rules: [
+                  'Available from DRAFT or DISPATCHED state only',
+                  'Vehicle and driver status revert to AVAILABLE',
+                  'Trip record is preserved for audit trail',
+                ],
+              },
+            ].map(s => (
+              <div key={s.step} style={{ background: 'var(--color-surface)' }} className="p-7">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    {s.step}
+                  </span>
+                  <span className="status-badge" style={{
+                    background: `${s.color}18`,
+                    color: s.color,
+                    borderColor: `${s.color}30`,
+                  }}>
+                    {s.label}
+                  </span>
+                </div>
+                <ul className="space-y-3">
+                  {s.rules.map(r => (
+                    <li key={r} className="text-sm leading-relaxed"
+                        style={{ color: 'var(--color-text-muted)' }}>
+                      — {r}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ───────────────────────────────────────────────────── */}
+      <section style={{ borderTop: '1px solid var(--color-border)' }} className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="ops-panel p-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div>
+              <h2 className="font-display font-bold text-2xl sm:text-3xl"
+                  style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>
+                Register your company. Start dispatch today.
+              </h2>
+              <p className="mt-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                One admin account. One Tenant ID. Your entire fleet, visible from one screen.
+              </p>
+            </div>
+            <div className="flex flex-col sm:items-end gap-3 shrink-0">
+              <Link href="/login" className="btn-primary">
+                Create Tenant Account →
+              </Link>
+              <Link href="/login"
+                    className="text-xs telemetry text-center"
+                    style={{ color: 'var(--color-text-muted)' }}>
+                Already registered? Sign in →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid var(--color-border)' }}
+              className="py-8">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}
+                 className="h-6 w-6 rounded flex items-center justify-center font-bold text-xs font-display">
+              TO
+            </div>
+            <span className="font-display font-semibold text-sm"
+                  style={{ color: 'var(--color-text-muted)' }}>
+              TransitOps
+            </span>
+          </div>
+          <div className="telemetry text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            © 2026 TransitOps, Inc. Fleet operations software.
+          </div>
         </div>
       </footer>
 

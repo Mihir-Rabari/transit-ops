@@ -3,38 +3,31 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Shield, KeyRound, Mail, User as UserIcon, HelpCircle, Building } from 'lucide-react';
+import { Building, Mail, KeyRound, User as UserIcon } from 'lucide-react';
 
 export default function LoginPage() {
   const { user, login, register, loading } = useAuth();
   const router = useRouter();
 
   const [isRegistering, setIsRegistering] = useState(false);
-  const [tenantId, setTenantId] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [tenantId, setTenantId]       = useState('');
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
+  const [name, setName]               = useState('');
   const [companyName, setCompanyName] = useState('');
-  
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+
+  const [error, setError]       = useState<string | null>(null);
+  const [success, setSuccess]   = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
-      // Auto detect and route user on start if already logged in
       const role = user.role;
-      if (role === 'ADMIN' || role === 'FLEET_MANAGER') {
-        router.push('/dashboard/manager');
-      } else if (role === 'DRIVER') {
-        router.push('/dashboard/driver');
-      } else if (role === 'SAFETY_OFFICER') {
-        router.push('/dashboard/safety');
-      } else if (role === 'FINANCIAL_ANALYST') {
-        router.push('/dashboard/finance');
-      } else {
-        router.push('/dashboard');
-      }
+      if (role === 'ADMIN' || role === 'FLEET_MANAGER')   router.push('/dashboard/manager');
+      else if (role === 'DRIVER')                          router.push('/dashboard/driver');
+      else if (role === 'SAFETY_OFFICER')                  router.push('/dashboard/safety');
+      else if (role === 'FINANCIAL_ANALYST')               router.push('/dashboard/finance');
+      else                                                 router.push('/dashboard');
     }
   }, [user, loading, router]);
 
@@ -43,25 +36,20 @@ export default function LoginPage() {
     setError(null);
     setSuccess(null);
     setSubmitting(true);
-
     try {
       if (isRegistering) {
-        if (!companyName.trim()) {
-          throw new Error('Company Name is required for registration.');
-        }
-        const generatedTenantId = await register(name, email, password, companyName);
-        setSuccess(`Company registered successfully! Log in using Tenant ID: ${generatedTenantId}`);
-        setTenantId(generatedTenantId);
+        if (!companyName.trim()) throw new Error('Company name is required.');
+        const tid = await register(name, email, password, companyName);
+        setSuccess(tid); // we'll display it specially
+        setTenantId(tid);
         setIsRegistering(false);
         setPassword('');
       } else {
-        if (!tenantId.trim()) {
-          throw new Error('Tenant ID is required to log in.');
-        }
+        if (!tenantId.trim()) throw new Error('Tenant ID is required to sign in.');
         await login(tenantId, email, password);
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred. Please try again.');
+      setError(err.message || 'Authentication failed. Check your credentials.');
     } finally {
       setSubmitting(false);
     }
@@ -69,143 +57,210 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-dark-bg text-brand-500">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
+      <div style={{ background: 'var(--color-base)', color: 'var(--color-signal-amber)' }}
+           className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-r-transparent" />
       </div>
     );
   }
 
+  const inputStyle: React.CSSProperties = {
+    background:  'var(--color-surface-raised)',
+    border:      '1px solid var(--color-border)',
+    color:       'var(--color-text-primary)',
+    borderRadius: '6px',
+    padding:     '9px 12px 9px 36px',
+    fontSize:    '14px',
+    fontFamily:  "'IBM Plex Sans', sans-serif",
+    width:       '100%',
+    outline:     'none',
+    transition:  'border-color 120ms ease',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display:      'block',
+    fontFamily:   "'IBM Plex Mono', monospace",
+    fontSize:     '10px',
+    fontWeight:   500,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    color:        'var(--color-text-muted)',
+    marginBottom: '6px',
+  };
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-dark-bg transition-colors duration-200">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-dark-card border border-slate-100 dark:border-dark-border">
-        
+    <div style={{ background: 'var(--color-base)', minHeight: '100vh' }}
+         className="flex flex-col items-center justify-center px-4 py-12">
+
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 mb-10">
+        <div style={{ background: 'var(--color-signal-amber)', color: '#0D1117' }}
+             className="h-8 w-8 rounded flex items-center justify-center font-bold text-sm font-display">
+          TO
+        </div>
+        <span className="font-display font-semibold text-base"
+              style={{ color: 'var(--color-text-primary)' }}>
+          TransitOps
+        </span>
+      </div>
+
+      {/* Card */}
+      <div className="w-full max-w-sm"
+           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '32px' }}>
+
         {/* Header */}
-        <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white font-bold shadow-lg shadow-brand-500/20 text-xl">
-            TO
-          </div>
-          <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
-            {isRegistering ? 'Register your Company' : 'Sign in to TransitOps'}
+        <div className="mb-7">
+          <h2 className="font-display font-bold text-xl" style={{ color: 'var(--color-text-primary)' }}>
+            {isRegistering ? 'Register company tenant' : 'Operator sign-in'}
           </h2>
-          <p className="mt-1 text-sm text-slate-400 dark:text-dark-muted text-center">
-            {isRegistering 
-              ? 'Onboard your transport organization and create an admin profile' 
-              : 'Enter your Tenant ID and credentials to continue'}
+          <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)', fontFamily: "'IBM Plex Sans'" }}>
+            {isRegistering
+              ? 'Creates a new isolated tenant and admin account.'
+              : 'Enter your Tenant ID and credentials to continue.'}
           </p>
         </div>
 
-        {/* Status Messages */}
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-500 dark:bg-red-950/20 dark:text-red-400 border border-red-200/50 dark:border-red-900/30">
-            {error}
+        {/* Tenant ID success box */}
+        {success && (
+          <div style={{
+            background: 'rgba(62, 207, 142, 0.08)',
+            border: '1px solid rgba(62, 207, 142, 0.25)',
+            borderRadius: '6px',
+            padding: '12px 14px',
+            marginBottom: '16px',
+          }}>
+            <p className="telemetry text-[10px] mb-1.5" style={{ color: 'var(--color-signal-green)' }}>
+              COMPANY REGISTERED — YOUR TENANT ID
+            </p>
+            <p className="telemetry text-sm font-medium break-all" style={{ color: 'var(--color-text-primary)' }}>
+              {success}
+            </p>
+            <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)', fontFamily: "'IBM Plex Sans'" }}>
+              Save this ID — you'll need it every time you sign in. It has been emailed to you.
+            </p>
           </div>
         )}
-        {success && (
-          <div className="mb-4 rounded-lg bg-emerald-50 p-3 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/30">
-            {success}
+
+        {/* Error */}
+        {error && (
+          <div style={{
+            background: 'rgba(255, 92, 92, 0.08)',
+            border: '1px solid rgba(255, 92, 92, 0.25)',
+            borderRadius: '6px',
+            padding: '10px 14px',
+            marginBottom: '16px',
+          }}>
+            <p className="text-xs" style={{ color: 'var(--color-signal-red)', fontFamily: "'IBM Plex Sans'" }}>
+              {error}
+            </p>
           </div>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
+          {/* Tenant ID — only on login */}
           {!isRegistering && (
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-                Tenant ID (Company Code)
-              </label>
+              <label style={labelStyle}>Tenant ID</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                  <Building size={16} />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+                  <Building size={14} />
                 </span>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+                  placeholder="550e8400-e29b-41d4-a716-…"
                   value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
+                  onChange={e => setTenantId(e.target.value)}
+                  style={{ ...inputStyle, fontFamily: "'IBM Plex Mono', monospace", fontSize: '12px' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-signal-amber)')}
+                  onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
                 />
               </div>
             </div>
           )}
 
+          {/* Company name — only on register */}
           {isRegistering && (
-            <>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-                  Company Name
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <Building size={16} />
-                  </span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Acme Fleet Operations"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
-                  />
-                </div>
+            <div>
+              <label style={labelStyle}>Company Name</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+                  <Building size={14} />
+                </span>
+                <input
+                  type="text"
+                  required
+                  placeholder="Acme Fleet Operations"
+                  value={companyName}
+                  onChange={e => setCompanyName(e.target.value)}
+                  style={inputStyle}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-signal-amber)')}
+                  onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+                />
               </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-                  Administrator Name
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <UserIcon size={16} />
-                  </span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
-                  />
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
+          {/* Admin name — only on register */}
+          {isRegistering && (
+            <div>
+              <label style={labelStyle}>Administrator Name</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+                  <UserIcon size={14} />
+                </span>
+                <input
+                  type="text"
+                  required
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  style={inputStyle}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-signal-amber)')}
+                  onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Email */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-              Email Address
-            </label>
+            <label style={labelStyle}>Email Address</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <Mail size={16} />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+                <Mail size={14} />
               </span>
               <input
                 type="email"
                 required
                 placeholder="admin@company.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
+                onChange={e => setEmail(e.target.value)}
+                style={inputStyle}
+                onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-signal-amber)')}
+                onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
               />
             </div>
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-dark-muted mb-1">
-              Password
-            </label>
+            <label style={labelStyle}>Password</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <KeyRound size={16} />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+                <KeyRound size={14} />
               </span>
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500"
+                onChange={e => setPassword(e.target.value)}
+                style={inputStyle}
+                onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-signal-amber)')}
+                onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
               />
             </div>
           </div>
@@ -213,35 +268,35 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-brand-600 py-3 text-sm font-semibold text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:bg-brand-400 disabled:cursor-not-allowed transition-all shadow-md shadow-brand-600/10"
+            className="btn-primary w-full justify-center mt-2"
+            style={{ opacity: submitting ? 0.6 : 1, cursor: submitting ? 'not-allowed' : 'pointer' }}
           >
-            {submitting ? 'Please wait...' : isRegistering ? 'Register Company' : 'Sign In'}
+            {submitting
+              ? 'Please wait…'
+              : isRegistering
+                ? 'Create Tenant Account'
+                : 'Sign In →'}
           </button>
         </form>
 
-        {/* Register/Login toggles */}
-        <div className="mt-6 text-center">
+        {/* Toggle */}
+        <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '20px', paddingTop: '16px' }}
+             className="text-center">
           <button
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              setError(null);
-              setSuccess(null);
-            }}
-            className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+            onClick={() => { setIsRegistering(!isRegistering); setError(null); setSuccess(null); }}
+            className="text-xs"
+            style={{ color: 'var(--color-text-muted)', fontFamily: "'IBM Plex Sans'", textDecoration: 'underline', textUnderlineOffset: '3px' }}
           >
-            {isRegistering ? 'Already have an organization? Sign in' : "Register a new Company Tenant"}
+            {isRegistering ? 'Have an account? Sign in' : 'Register a new company tenant'}
           </button>
         </div>
 
-        {/* Empty database help message */}
-        <div className="mt-8 flex items-start space-x-2 rounded-lg bg-blue-50/50 p-3 text-xs text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-100/50 dark:border-blue-900/10">
-          <HelpCircle size={16} className="mt-0.5 shrink-0" />
-          <p>
-            <strong>First time setup?</strong> Click <strong>Register a new Company Tenant</strong> above to initialize a company and generate your unique <strong>Tenant ID</strong>.
-          </p>
-        </div>
-
       </div>
+
+      {/* Footer hint */}
+      <p className="telemetry text-[11px] mt-8" style={{ color: 'var(--color-text-muted)' }}>
+        TransitOps v1.0 · Fleet Operations Platform
+      </p>
     </div>
   );
 }

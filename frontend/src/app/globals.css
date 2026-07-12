@@ -1,40 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS
+   All values sourced from tailwind.config.ts.
+   Declare as vars here for use in raw CSS.
+───────────────────────────────────────────── */
+:root {
+  --color-base:            #12161D;
+  --color-surface:         #1B222C;
+  --color-surface-raised:  #232B37;
+  --color-text-primary:    #EDF1F6;
+  --color-text-muted:      #8993A4;
+  --color-signal-amber:    #FFB020;
+  --color-signal-green:    #3ECF8E;
+  --color-signal-red:      #FF5C5C;
+  --color-signal-slate:    #4A5568;
+  --color-border:          #2A3340;
+}
+
+/* ─────────────────────────────────────────────
+   BASE RESET
+───────────────────────────────────────────── */
 @layer base {
+  html {
+    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui;
+    background-color: var(--color-base);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900 transition-colors duration-200;
+    background-color: var(--color-base);
+    color: var(--color-text-primary);
+    transition: none; /* Remove heavy transition from root body */
   }
-  
-  body.dark {
-    @apply bg-dark-bg text-dark-text;
+
+  /* Headings always use Space Grotesk */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui;
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
+
+  /* Numeric / telemetry fields — apply .font-mono directly in JSX */
+  /* IBM Plex Mono is registered via Tailwind font-mono class */
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ─────────────────────────────────────────────
+   SCROLLBAR — thin, low-contrast
+───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3d4f63; }
+
+/* ─────────────────────────────────────────────
+   STATUS BADGE TRANSITIONS
+   150ms color transition makes ops panels feel
+   like a real live dashboard updating, not a
+   static UI decorating itself.
+───────────────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  border: 1px solid transparent;
 }
 
-::-webkit-scrollbar-track {
+.status-badge--green {
+  background: rgba(62, 207, 142, 0.12);
+  color: #3ECF8E;
+  border-color: rgba(62, 207, 142, 0.25);
+}
+.status-badge--amber {
+  background: rgba(255, 176, 32, 0.12);
+  color: #FFB020;
+  border-color: rgba(255, 176, 32, 0.25);
+}
+.status-badge--red {
+  background: rgba(255, 92, 92, 0.12);
+  color: #FF5C5C;
+  border-color: rgba(255, 92, 92, 0.25);
+}
+.status-badge--slate {
+  background: rgba(74, 85, 104, 0.2);
+  color: #8993A4;
+  border-color: rgba(74, 85, 104, 0.3);
+}
+
+/* ─────────────────────────────────────────────
+   PANEL / CARD — replaces generic card class
+───────────────────────────────────────────── */
+.ops-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.ops-panel--raised {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+/* ─────────────────────────────────────────────
+   TELEMETRY NUMBER — monospace data readout
+   Usage: <span className="telemetry">14,203 km</span>
+───────────────────────────────────────────── */
+.telemetry {
+  font-family: 'IBM Plex Mono', monospace;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  letter-spacing: 0;
+}
+
+/* ─────────────────────────────────────────────
+   KPI TILE — live ops board stat panel
+───────────────────────────────────────────── */
+.kpi-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-tile__label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.kpi-tile__value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+/* ─────────────────────────────────────────────
+   KANBAN COLUMN HEADER ACCENTS
+───────────────────────────────────────────── */
+.col-header--draft     { border-top: 2px solid var(--color-border); }
+.col-header--dispatch  { border-top: 2px solid var(--color-signal-amber); }
+.col-header--complete  { border-top: 2px solid var(--color-signal-green); }
+.col-header--cancelled { border-top: 2px solid var(--color-signal-red); }
+
+/* ─────────────────────────────────────────────
+   BUTTON VARIANTS
+───────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-signal-amber);
+  color: #0D1117;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 120ms ease, transform 80ms ease;
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: transparent;
+  color: var(--color-text-muted);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.btn-ghost:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+/* ─────────────────────────────────────────────
+   ANIMATE UTILITIES
+───────────────────────────────────────────── */
+.animate-fadeIn { animation: fade-in 200ms ease forwards; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  @apply bg-slate-800;
+/* ─────────────────────────────────────────────
+   LIVE STATUS BOARD — landing page fleet grid
+───────────────────────────────────────────── */
+.vehicle-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 150ms ease;
+}
+.vehicle-tile--ontrip  { border-left: 3px solid var(--color-signal-amber); }
+.vehicle-tile--available { border-left: 3px solid var(--color-signal-green); }
+.vehicle-tile--inshop  { border-left: 3px solid var(--color-signal-slate); }
+
+.vehicle-tile__reg {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: 0.04em;
 }
 
-/* Glassmorphism card utility */
-.glass-panel {
-  @apply bg-white/70 backdrop-blur-md border border-slate-100 shadow-sm;
-}
-
-.dark .glass-panel {
-  @apply bg-dark-card/75 backdrop-blur-md border-dark-border shadow-lg;
+.vehicle-tile__type {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
