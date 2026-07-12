@@ -11,3 +11,4 @@
 [2026-07-12T10:56:00] Log entry for: Fix type annotations in vehicles form data
 [2026-07-12T11:04:36] Log entry for: Refactor API request helper hooks
 [2026-07-12T11:13:12] Log entry for: Improve error state alerts for invalid forms
+[2026-07-12T11:21:48] Log entry for: Add caching parameters to dashboard KPI endpoints
