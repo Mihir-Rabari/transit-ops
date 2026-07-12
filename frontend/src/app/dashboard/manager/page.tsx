@@ -158,16 +158,17 @@ export default function ManagerDashboard() {
           <span className="kpi-tile__value">
             {loading ? '—' : kpis?.totalVehicles ?? 0}
           </span>
-          <div className="flex flex-wrap gap-2 mt-1">
-            <span className="status-badge status-badge--green">
-              {loading ? '—' : kpis?.availableVehicles ?? 0} Avail
+          <div className="flex items-center justify-between mt-1">
+            <span className="telemetry text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+              {loading ? '—' : `${kpis?.availableVehicles ?? 0} available`}
             </span>
-            <span className="status-badge status-badge--amber">
-              {loading ? '—' : kpis?.activeVehicles ?? 0} Trip
-            </span>
-            <span className="status-badge status-badge--slate">
-              {loading ? '—' : kpis?.maintenanceVehicles ?? 0} Shop
-            </span>
+            <button
+              onClick={() => router.push('/vehicles')}
+              className="flex items-center gap-1 text-[10px] telemetry hover:underline"
+              style={{ color: 'var(--color-signal-amber)' }}
+            >
+              Manage <ArrowRight size={10} />
+            </button>
           </div>
         </div>
 
