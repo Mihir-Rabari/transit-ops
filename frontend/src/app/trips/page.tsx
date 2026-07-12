@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiRequest } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { SkeletonKanban } from '../components/Skeleton';
 import { 
   Plus, 
   X, 
@@ -314,7 +315,7 @@ export default function TripsPage() {
   const isDriverOrManager = user?.role === 'FLEET_MANAGER' || user?.role === 'ADMIN' || user?.role === 'DRIVER';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-slideUp">
       
       {/* Header Panel */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -451,9 +452,7 @@ export default function TripsPage() {
 
       {/* Trips Kanban Board */}
       {loading ? (
-        <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
-        </div>
+        <SkeletonKanban />
       ) : trips.length === 0 ? (
         <div className="ops-panel p-8 text-center" style={{ borderStyle: 'dashed' }}>
           <Route className="mx-auto h-10 w-10 mb-3" style={{ color: 'var(--color-border)' }} />

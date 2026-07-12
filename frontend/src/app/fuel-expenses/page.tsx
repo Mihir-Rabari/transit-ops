@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiRequest } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { SkeletonTable } from '../components/Skeleton';
 import { 
   Plus, 
   Fuel, 
@@ -175,7 +176,7 @@ export default function FuelExpensesPage() {
   const totalOtherSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-slideUp">
       
       {/* Header Panel */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -421,9 +422,7 @@ export default function FuelExpensesPage() {
 
       {/* Tab Panels */}
       {loading ? (
-        <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
-        </div>
+        <SkeletonTable rows={5} cols={6} />
       ) : activeTab === 'summary' ? (
         <div className="overflow-x-auto ops-panel">
           <table className="min-w-full divide-y divide-[var(--color-border)] text-left text-sm">

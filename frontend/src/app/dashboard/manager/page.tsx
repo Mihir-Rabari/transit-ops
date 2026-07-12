@@ -108,7 +108,7 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-slideUp">
 
       {/* ── Top bar: tenant info + refresh ─────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

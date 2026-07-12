@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { SkeletonGrid } from '../components/Skeleton';
 import { 
   BarChart, 
   Bar, 
@@ -161,7 +162,7 @@ export default function ReportsPage() {
   const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444'];
 
   return (
-    <div className="space-y-6 print:space-y-4 print:p-0">
+    <div className="space-y-6 animate-slideUp print:space-y-4 print:p-0">
       
       {/* Header and Controls */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 print:hidden">
@@ -188,9 +189,7 @@ export default function ReportsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
-        </div>
+        <SkeletonGrid count={4} />
       ) : roiData.length === 0 ? (
         <div className="ops-panel p-8 text-center">
           <AlertTriangle className="mx-auto h-12 w-12 mb-3" style={{ color: 'var(--color-text-muted)', opacity: 0.3 }} />

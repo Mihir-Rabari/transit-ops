@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiRequest } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { SkeletonTable } from '../components/Skeleton';
 import { 
   Plus, 
   Search, 
@@ -233,7 +234,7 @@ export default function DriversPage() {
   }, [step, name, contactNum, licenseNum, licenseCat, licenseExp]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-slideUp">
       
       {/* Header Panel */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -396,9 +397,7 @@ export default function DriversPage() {
 
       {/* Directory Table */}
       {loading ? (
-        <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent" style={{ borderColor: 'var(--color-signal-amber)' }} />
-        </div>
+        <SkeletonTable rows={5} cols={5} />
       ) : filteredDrivers.length === 0 ? (
         <div className="ops-panel p-8 text-center">
           <ShieldAlert className="mx-auto h-12 w-12 mb-3" style={{ color: 'var(--color-text-muted)', opacity: 0.3 }} />
