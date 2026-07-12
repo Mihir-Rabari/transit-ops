@@ -15,7 +15,8 @@ import {
   Moon, 
   Sun,
   Menu,
-  X
+  X,
+  UserCog
 } from 'lucide-react';
 import './globals.css';
 
@@ -65,13 +66,14 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
-    { name: 'Vehicles', path: '/vehicles', icon: Truck, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
-    { name: 'Drivers', path: '/drivers', icon: Users, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
-    { name: 'Trips', path: '/trips', icon: Route, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
-    { name: 'Maintenance', path: '/maintenance', icon: Wrench, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
-    { name: 'Fuel & Expenses', path: '/fuel-expenses', icon: Fuel, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
-    { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'User Management', path: '/users', icon: UserCog, roles: ['ADMIN'] },
+    { name: 'Vehicles', path: '/vehicles', icon: Truck, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'Drivers', path: '/drivers', icon: Users, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'Trips', path: '/trips', icon: Route, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'Maintenance', path: '/maintenance', icon: Wrench, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'Fuel & Expenses', path: '/fuel-expenses', icon: Fuel, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
+    { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['ADMIN', 'FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'] },
   ];
 
   const allowedMenuItems = menuItems.filter(item => item.roles.includes(user.role));

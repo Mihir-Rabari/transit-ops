@@ -12,11 +12,13 @@ model User {
   email         String   @unique
   passwordHash  String
   name          String
-  role          Role     // FLEET_MANAGER, DRIVER, SAFETY_OFFICER, FINANCIAL_ANALYST
+  role          Role     // ADMIN, FLEET_MANAGER, DRIVER, SAFETY_OFFICER, FINANCIAL_ANALYST
+  driver        Driver?
   createdAt     DateTime @default(now())
 }
 
 enum Role {
+  ADMIN
   FLEET_MANAGER
   DRIVER
   SAFETY_OFFICER
@@ -58,6 +60,8 @@ model Driver {
   safetyScore       Float    @default(100)
   status            DriverStatus @default(AVAILABLE)
   trips             Trip[]
+  userId            String?  @unique
+  user              User?    @relation(fields: [userId], references: [id])
   createdAt         DateTime @default(now())
 }
 

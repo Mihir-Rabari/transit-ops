@@ -159,6 +159,7 @@ export default function LoginPage() {
                   onChange={(e) => setRole(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-brand-500 focus:bg-white focus:outline-none dark:border-dark-border dark:bg-slate-900 dark:text-white dark:focus:border-brand-500 appearance-none"
                 >
+                  <option value="ADMIN">Administrator (User & System Admin)</option>
                   <option value="FLEET_MANAGER">Fleet Manager (Full Access)</option>
                   <option value="DRIVER">Driver (Trip Executions)</option>
                   <option value="SAFETY_OFFICER">Safety Officer (Compliance & Safety)</option>
@@ -195,7 +196,7 @@ export default function LoginPage() {
         <div className="mt-8 flex items-start space-x-2 rounded-lg bg-blue-50/50 p-3 text-xs text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-100/50 dark:border-blue-900/10">
           <HelpCircle size={16} className="mt-0.5 shrink-0" />
           <p>
-            <strong>First time setup?</strong> The database is completely empty. Toggle <strong>Register</strong> above to create the initial <strong>Fleet Manager</strong> user.
+            <strong>First time setup?</strong> The database is completely empty. Toggle <strong>Register</strong> above to create the initial <strong>Administrator</strong> or <strong>Fleet Manager</strong> user.
           </p>
         </div>
 

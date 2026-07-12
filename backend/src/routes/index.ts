@@ -7,6 +7,7 @@ import maintenanceRoutes from './maintenanceRoutes';
 import fuelExpensesRoutes from './fuelExpensesRoutes';
 import dashboardRoutes from './dashboardRoutes';
 import reportsRoutes from './reportsRoutes';
+import usersRoutes from './usersRoutes';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.use('/trips', tripsRoutes);
 router.use('/maintenance', maintenanceRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/reports', reportsRoutes);
+router.use('/users', usersRoutes);
 
 // Fuel & Expense routes are at the root API path (/fuel-logs and /expenses)
 router.use('/', fuelExpensesRoutes);

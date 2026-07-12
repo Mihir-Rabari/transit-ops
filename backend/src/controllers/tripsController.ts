@@ -1,11 +1,25 @@
 import { Request, Response } from 'express';
 import prisma from '../config/db';
-import { TripStatus, VehicleStatus, DriverStatus } from '@prisma/client';
+import { TripStatus, VehicleStatus, DriverStatus, Role } from '@prisma/client';
 import { invalidateDashboardCache } from '../utils/cache';
 
 export async function getAllTrips(req: Request, res: Response) {
+  const user = (req as any).user;
+  const where: any = {};
+
   try {
+    if (user && user.role === Role.DRIVER) {
+      // Find associated Driver profile
+      const driver = await prisma.driver.findUnique({ where: { userId: user.id } });
+      if (!driver) {
+        // If not linked to any profile, return empty list
+        return res.json([]);
+      }
+      where.driverId = driver.id;
+    }
+
     const trips = await prisma.trip.findMany({
+      where,
       include: {
         vehicle: {
           select: { id: true, registrationNumber: true, name: true, maxLoadCapacityKg: true, odometer: true }
@@ -101,6 +115,7 @@ export async function createTrip(req: Request, res: Response) {
 
 export async function dispatchTrip(req: Request, res: Response) {
   const { id } = req.params;
+  const user = (req as any).user;
 
   try {
     // Check if trip exists and is DRAFT
@@ -111,6 +126,14 @@ export async function dispatchTrip(req: Request, res: Response) {
 
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    // Role check: DRIVER can only dispatch their own trip
+    if (user && user.role === Role.DRIVER) {
+      const driver = await prisma.driver.findUnique({ where: { userId: user.id } });
+      if (!driver || trip.driverId !== driver.id) {
+        return res.status(403).json({ error: 'Forbidden: You can only dispatch trips assigned to you' });
+      }
     }
 
     if (trip.status !== TripStatus.DRAFT) {
@@ -180,6 +203,7 @@ export async function dispatchTrip(req: Request, res: Response) {
 export async function completeTrip(req: Request, res: Response) {
   const { id } = req.params;
   const { actualDistanceKm, fuelConsumedL } = req.body;
+  const user = (req as any).user;
 
   if (actualDistanceKm === undefined || fuelConsumedL === undefined) {
     return res.status(400).json({ error: 'Required fields: actualDistanceKm, fuelConsumedL' });
@@ -203,6 +227,14 @@ export async function completeTrip(req: Request, res: Response) {
 
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    // Role check: DRIVER can only complete their own trip
+    if (user && user.role === Role.DRIVER) {
+      const driver = await prisma.driver.findUnique({ where: { userId: user.id } });
+      if (!driver || trip.driverId !== driver.id) {
+        return res.status(403).json({ error: 'Forbidden: You can only complete trips assigned to you' });
+      }
     }
 
     if (trip.status !== TripStatus.DISPATCHED) {
@@ -269,6 +301,7 @@ export async function completeTrip(req: Request, res: Response) {
 
 export async function cancelTrip(req: Request, res: Response) {
   const { id } = req.params;
+  const user = (req as any).user;
 
   try {
     const trip = await prisma.trip.findUnique({
@@ -278,6 +311,14 @@ export async function cancelTrip(req: Request, res: Response) {
 
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    // Role check: DRIVER can only cancel their own trip
+    if (user && user.role === Role.DRIVER) {
+      const driver = await prisma.driver.findUnique({ where: { userId: user.id } });
+      if (!driver || trip.driverId !== driver.id) {
+        return res.status(403).json({ error: 'Forbidden: You can only cancel trips assigned to you' });
+      }
     }
 
     if (trip.status === TripStatus.COMPLETED || trip.status === TripStatus.CANCELLED) {
